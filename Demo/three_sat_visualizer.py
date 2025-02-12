@@ -1,9 +1,5 @@
 import math
 import pygame
-import networkx as nx
-
-from base_visualizer import BaseGraphVisualizer, WIDTH, HEIGHT, BACKGROUND_COLOR, \
-                           NODE_COLOR, EDGE_COLOR, HIGHLIGHT_NODE_COLOR, LABEL_COLOR, RADIUS
 
 # Basic PyGame / drawing constants
 WIDTH, HEIGHT = 800, 600
