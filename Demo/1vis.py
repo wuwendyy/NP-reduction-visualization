@@ -1,7 +1,19 @@
 import sys
-from element import Graph, Formula
-from helpers import Node, Edge
+import pygame
+import math
+sys.path.append("./Elements")
+
+from element import Graph, Formula, Node, Edge
 import itertools
+
+# Visualization Constants
+WIDTH, HEIGHT = 800, 600
+BACKGROUND_COLOR = (255, 255, 255)
+NODE_COLOR = (34, 139, 34)
+EDGE_COLOR = (0, 0, 0)
+LABEL_COLOR = (0, 0, 0)
+HIGHLIGHT_NODE_COLOR = (255, 100, 100)
+RADIUS = 20
 
 class ThreeSatToIndependentSetReduction:
     def __init__(self, formula):
@@ -92,9 +104,34 @@ class ThreeSatToIndependentSetReduction:
     
     def display(self):
         """
-        Displays the Independent Set graph.
+        Displays the Independent Set graph using PyGame.
         """
-        self.graph.display()
+        pygame.init()
+        screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        pygame.display.set_caption("Independent Set Graph")
+        clock = pygame.time.Clock()
+        running = True
+        pos = {node.node_id: (math.cos(i) * 200 + WIDTH // 2, math.sin(i) * 200 + HEIGHT // 2) for i, node in enumerate(self.graph.nodes)}
+        
+        while running:
+            screen.fill(BACKGROUND_COLOR)
+            
+            for edge in self.graph.edges:
+                pygame.draw.line(screen, EDGE_COLOR, pos[edge.node1.node_id], pos[edge.node2.node_id], 2)
+            
+            for node in self.graph.nodes:
+                pygame.draw.circle(screen, NODE_COLOR, pos[node.node_id], RADIUS)
+                font = pygame.font.SysFont(None, 24)
+                text_surface = font.render(str(node.node_id), True, LABEL_COLOR)
+                text_rect = text_surface.get_rect(center=pos[node.node_id])
+                screen.blit(text_surface, text_rect)
+            
+            pygame.display.flip()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+            clock.tick(30)
+        pygame.quit()
 
 # Example usage
 if __name__ == "__main__":
