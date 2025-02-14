@@ -1,5 +1,6 @@
 import math
 import pygame
+from three_sat_reduction import ThreeSatToIndependentSetReduction
 
 # Basic PyGame / drawing constants
 WIDTH, HEIGHT = 800, 600
@@ -14,7 +15,7 @@ HIGHLIGHT_COLOR = (255, 100, 100)  # Red highlight for selected nodes
 RADIUS = 20
 
 class ThreeSatGraphVisualizer:
-    def __init__(self, graph, clause_vertices, formula, literal_to_formula_indices, width=1000, height=700):
+    def __init__(self, graph, clause_vertices, formula, literal_to_formula_indices, reduction, width=1000, height=700):
         """
         Args:
             graph: NetworkX graph containing 3-SAT nodes/edges.
@@ -31,6 +32,7 @@ class ThreeSatGraphVisualizer:
         self.edge_highlight = None  # Track the selected edge
         self.width = width
         self.height = height
+        self.reduction = reduction
 
         # Initialize PyGame
         pygame.init()
@@ -81,16 +83,7 @@ class ThreeSatGraphVisualizer:
 
         pygame.quit()
 
-    # def _handle_events(self):
-    #     """
-    #     Handles user interactions, including edge clicks.
-    #     """
-    #     for event in pygame.event.get():
-    #         if event.type == pygame.QUIT:
-    #             self.running = False
-    #         elif event.type == pygame.MOUSEBUTTONDOWN:
-    #             print("Mouse clicked at:", pygame.mouse.get_pos())  # ✅ Debugging click events
-    #             self._handle_edge_click(pygame.mouse.get_pos())  # ✅ Ensure edge detection runs
+
     def _handle_events(self):
         """
         Handles user interactions, distinguishing between node and edge clicks.
@@ -112,6 +105,30 @@ class ThreeSatGraphVisualizer:
                     # ✅ Node was clicked, so don't process edge clicks
                     self.edge_highlight = None  
 
+    # def _handle_node_click(self, mouse_pos):
+    #     """
+    #     Detects if a user clicks on a node and highlights it.
+    #     Calls `_update_highlighted_literals()` to highlight the corresponding literal in the formula.
+    #     """
+    #     mx, my = mouse_pos
+    #     for node in self.graph.nodes():
+    #         x, y = self.pos[node]
+
+    #         # Check if the click is inside the node (circle with radius 25)
+    #         if math.sqrt((mx - x) ** 2 + (my - y) ** 2) < 25:
+    #             print(f"Node clicked: {node}")  # ✅ Debugging node clicks
+    #             self.node_highlight = node  # ✅ Store highlighted node
+
+    #             # ✅ Update highlighted literals
+    #             lit = self.graph.nodes[node]["literal"]
+    #             self._update_highlighted_literals([lit])
+
+    #             return node  # ✅ Return the clicked node
+
+    #     self.node_highlight = None  # ✅ If no node clicked, clear highlight
+    #     self.highlighted_literals.clear()  # ✅ Clear formula highlights when clicking empty space
+    #     return None
+
     def _handle_node_click(self, mouse_pos):
         """
         Detects if a user clicks on a node and highlights it.
@@ -126,16 +143,18 @@ class ThreeSatGraphVisualizer:
                 print(f"Node clicked: {node}")  # ✅ Debugging node clicks
                 self.node_highlight = node  # ✅ Store highlighted node
 
-                # ✅ Update highlighted literals
+                # ✅ Extract the literal and its clause index
                 lit = self.graph.nodes[node]["literal"]
+                
                 self._update_highlighted_literals([lit])
+                # ✅ Pass the clause-specific literal to `_update_highlighted_literals()`
+                # self._update_highlighted_literals([(clause_idx, lit_idx)])
 
                 return node  # ✅ Return the clicked node
 
         self.node_highlight = None  # ✅ If no node clicked, clear highlight
         self.highlighted_literals.clear()  # ✅ Clear formula highlights when clicking empty space
         return None
-
 
 
     def _handle_edge_click(self, mouse_pos):
@@ -252,18 +271,47 @@ class ThreeSatGraphVisualizer:
         return min(x1, x2) - 1 <= px <= max(x1, x2) + 1 and min(y1, y2) - 1 <= py <= max(y1, y2) + 1
 
 
-    # def _update_highlighted_literals(self, literals):
+   
+    
+    # def _update_highlighted_literals(self, literals, clicked_edge=None):
     #     """
-    #     Updates `self.highlighted_literals` to highlight literals in the 3-CNF formula.
-    #     Called when clicking on an edge or a node.
+    #     Updates `self.highlighted_literals` and `self.highlighted_operators` based on user interaction.
+
+    #     - If a node is clicked → Highlight only that literal.
+    #     - If an edge is clicked:
+    #     - If it's between opposite literals (x, ¬x), highlight both in all corresponding clauses.
+    #     - If it's between different literals (x1, x2), highlight only the `∨` operator between them.
     #     """
     #     self.highlighted_literals.clear()  # ✅ Reset previous highlights
+    #     self.highlighted_operators.clear()  # ✅ Reset highlighted `∨` operators
 
-    #     for lit in literals:
-    #         if lit in self.literal_to_formula_indices:
-    #             self.highlighted_literals.update(self.literal_to_formula_indices[lit])
+    #     if clicked_edge:
+    #         lit1, lit2 = clicked_edge
 
-    #     print(f"Highlighted literals: {self.highlighted_literals}")  # ✅ Debugging
+    #         # ✅ If the edge is between a literal and its negation, highlight both occurrences
+    #         if lit1[0] == lit2[0] and lit1[1] != lit2[1]:  # Example: (x1, ¬x1)
+    #             for target_lit in [lit1, lit2]:
+    #                 if target_lit in self.literal_to_formula_indices:
+    #                     for clause_idx, literal_idx in self.literal_to_formula_indices[target_lit]:
+    #                         self.highlighted_literals.add((clause_idx, literal_idx))
+
+    #         else:
+    #             # ✅ If the edge is between different literals (x1, x2), highlight only the `∨` operator
+    #             for clause_idx, clause in enumerate(self.formula):
+    #                 indices = [i for i, lit in enumerate(clause) if lit in [lit1, lit2]]
+    #                 if len(indices) == 2:  # Ensure both literals exist in the same clause
+    #                     self.highlighted_operators.add((clause_idx, min(indices)))
+
+    #     else:
+    #         # ✅ If a node is clicked, highlight **only that literal in all occurrences**
+    #         for lit in literals:
+    #             if lit in self.literal_to_formula_indices:
+    #                 for clause_idx, literal_idx in self.literal_to_formula_indices[lit]:
+    #                     self.highlighted_literals.add((clause_idx, literal_idx))
+
+    #     print(f"Highlighted literals: {self.highlighted_literals}")
+    #     print(f"Highlighted operators: {self.highlighted_operators}")
+
     def _update_highlighted_literals(self, literals, clicked_edge=None):
         """
         Updates `self.highlighted_literals` and `self.highlighted_operators` based on user interaction.
@@ -273,122 +321,55 @@ class ThreeSatGraphVisualizer:
         - If it's between opposite literals (x, ¬x), highlight both in all corresponding clauses.
         - If it's between different literals (x1, x2), highlight only the `∨` operator between them.
         """
-        self.highlighted_literals.clear()  # ✅ Reset previous highlights
-        self.highlighted_operators.clear()  # ✅ Reset highlighted `∨` operators
+        self.highlighted_literals.clear()  # Reset previous highlights
+        self.highlighted_operators.clear()  # Reset highlighted `∨` operators
 
         if clicked_edge:
             lit1, lit2 = clicked_edge
 
             # ✅ If the edge is between a literal and its negation, highlight both occurrences
             if lit1[0] == lit2[0] and lit1[1] != lit2[1]:  # Example: (x1, ¬x1)
-                for target_lit in [lit1, lit2]:
-                    if target_lit in self.literal_to_formula_indices:
-                        for clause_idx, literal_idx in self.literal_to_formula_indices[target_lit]:
-                            self.highlighted_literals.add((clause_idx, literal_idx))
+                var = lit1[0]
+                if (var, True) in self.reduction.assignment_mapping and (var, False) in self.reduction.assignment_mapping:
+                    u = self.reduction.assignment_mapping[(var, True)]
+                    v = self.reduction.assignment_mapping[(var, False)]
+                    for node in [u, v]:
+                        for (clause_idx, lit_idx), node_id in self.reduction.node_mapping.items():
+                            if node_id == node:
+                                self.highlighted_literals.add((clause_idx, lit_idx))
 
             else:
                 # ✅ If the edge is between different literals (x1, x2), highlight only the `∨` operator
-                for clause_idx, clause in enumerate(self.formula):
+                for clause_idx, clause in enumerate(self.reduction.formula.clauses):
                     indices = [i for i, lit in enumerate(clause) if lit in [lit1, lit2]]
                     if len(indices) == 2:  # Ensure both literals exist in the same clause
                         self.highlighted_operators.add((clause_idx, min(indices)))
 
-        else:
+        else: # node clicked
             # ✅ If a node is clicked, highlight **only that literal in all occurrences**
+            # for lit in literals:
+            #     for (clause_idx, lit_idx), node_id in self.reduction.node_mapping.items():
+            #         if self.reduction.graph.nodes[node_id]["literal"] == lit:
+            #             self.highlighted_literals.add((clause_idx, lit_idx))
             for lit in literals:
-                if lit in self.literal_to_formula_indices:
-                    for clause_idx, literal_idx in self.literal_to_formula_indices[lit]:
-                        self.highlighted_literals.add((clause_idx, literal_idx))
+                print(f"Checking literal: {lit}")
+
+                for (clause_idx, lit_idx), node_id in self.reduction.node_mapping.items():
+                    node_literal = self.reduction.graph.nodes[node_id].get("literal", None)
+
+                    if node_literal:
+                        print(f"Comparing: searched {lit} vs stored {node_literal}")
+
+                    if node_literal == lit:
+                        print(f"Match found! Adding (clause_idx: {clause_idx}, lit_idx: {lit_idx}) to highlighted_literals")
+                        self.highlighted_literals.add((clause_idx, lit_idx))
+                    else:
+                        print(f"No match found. Expected {lit} but got {node_literal}")
 
         print(f"Highlighted literals: {self.highlighted_literals}")
         print(f"Highlighted operators: {self.highlighted_operators}")
 
-
-    # def _draw_scene(self):
-    #     """
-    #     Draws the graph and highlights the selected edge's literals in the formula.
-    #     """
-    #     self.screen.fill((255, 255, 255))  # White background
-
-    #     # Draw edges
-    #     for u, v in self.graph.edges():
-    #         color = (255, 0, 0) if self.edge_highlight == (u, v) or self.edge_highlight == (v, u) else (0, 0, 0)
-    #         pygame.draw.line(self.screen, color, self.pos[u], self.pos[v], 2)
-
-    #     # Draw nodes
-    #     for node in self.graph.nodes():
-    #         pygame.draw.circle(self.screen, (50, 100, 255), self.pos[node], 25)
-    #         lit = self.graph.nodes[node]['literal']
-    #         var_idx, neg = lit
-    #         text_label = f"¬x{var_idx}" if neg else f"x{var_idx}"
-
-    #         font = pygame.font.SysFont(None, 24)
-    #         text_surface = font.render(text_label, True, (0, 0, 0))
-    #         text_rect = text_surface.get_rect(center=self.pos[node])
-    #         self.screen.blit(text_surface, text_rect)
-
-    #     # ✅ Draw formula with highlight only when an edge is clicked
-    #     font = pygame.font.SysFont(None, 32)
-    #     highlighted_literals = set()
-
-    #     if self.edge_highlight:
-    #         u, v = self.edge_highlight
-    #         lit1 = self.graph.nodes[u]["literal"]
-    #         lit2 = self.graph.nodes[v]["literal"]
-
-    #         if lit1 in self.literal_to_formula_indices:
-    #             highlighted_literals.update(self.literal_to_formula_indices[lit1])
-    #         if lit2 in self.literal_to_formula_indices:
-    #             highlighted_literals.update(self.literal_to_formula_indices[lit2])
-
-    #     for c_idx, clause in enumerate(self.formula):
-    #         clause_text = " ∨ ".join([f"¬x{v}" if n else f"x{v}" for v, n in clause])
-    #         color = (255, 0, 0) if any((c_idx, i) in highlighted_literals for i in range(len(clause))) else (0, 0, 0)
-    #         text_surface = font.render(f"({clause_text})", True, color)
-    #         self.screen.blit(text_surface, (20, 20 + c_idx * 40))
-    # def _draw_scene(self):
-    #     """
-    #     Draws the graph, curved edges, and the 3-CNF formula at the top of the screen.
-    #     """
-    #     self.screen.fill((255, 255, 255))  # White background
-
-    #     # ✅ Draw the 3-CNF Formula at the top of the screen
-    #     self._draw_formula()
-
-    #     # ✅ Draw edges with curves where necessary
-    #     for u, v in self.graph.edges():
-    #         x1, y1 = self.pos[u]
-    #         x2, y2 = self.pos[v]
-
-    #         # Check if edge should be curved (if it passes near another node)
-    #         curve = False
-    #         for node in self.graph.nodes():
-    #             if node != u and node != v:
-    #                 x, y = self.pos[node]
-    #                 if is_edge_passing_through((x1, y1), (x2, y2), (x, y)):
-    #                     curve = True
-    #                     break
-
-    #         if curve:
-    #             # **Draw curved edge using Bezier curve**
-    #             control_x = (x1 + x2) / 2 + 40  # Offset control point for curve
-    #             control_y = (y1 + y2) / 2 - 40  # Offset to prevent overlap
-    #             draw_curved_edge(self.screen, (x1, y1), (x2, y2), (control_x, control_y))
-    #         else:
-    #             # **Draw straight edge**
-    #             pygame.draw.line(self.screen, (0, 0, 0), (x1, y1), (x2, y2), 2)
-
-    #     # ✅ Draw nodes
-    #     for node in self.graph.nodes():
-    #         pygame.draw.circle(self.screen, (50, 100, 255), self.pos[node], 25)
-    #         lit = self.graph.nodes[node]['literal']
-    #         var_idx, neg = lit
-    #         text_label = f"¬x{var_idx}" if neg else f"x{var_idx}"
-
-    #         font = pygame.font.SysFont(None, 24)
-    #         text_surface = font.render(text_label, True, (0, 0, 0))
-    #         text_rect = text_surface.get_rect(center=self.pos[node])
-    #         self.screen.blit(text_surface, text_rect)
+   
     def _draw_scene(self):
         """
         Draws the graph, curved edges, and the 3-CNF formula at the top of the screen.
@@ -432,26 +413,7 @@ class ThreeSatGraphVisualizer:
         # ✅ Update display
         pygame.display.flip()
         
-    # def _draw_nodes(self):
-    #     """
-    #     Draws nodes with a different color if they are connected to a highlighted edge.
-    #     """
-    #     for node in self.graph.nodes():
-    #         # Determine if the node is part of a selected edge
-    #         is_highlighted = any(self.edge_highlight == (node, adj) or self.edge_highlight == (adj, node) for adj in self.graph.neighbors(node))
-
-    #         # Change color if connected to a highlighted edge
-    #         node_color = (255, 150, 0) if is_highlighted else (50, 100, 255)  # Orange for highlight, blue otherwise
-
-    #         pygame.draw.circle(self.screen, node_color, self.pos[node], 25)
-    #         lit = self.graph.nodes[node]['literal']
-    #         var_idx, neg = lit
-    #         text_label = f"¬x{var_idx}" if neg else f"x{var_idx}"
-
-    #         font = pygame.font.SysFont(None, 24)
-    #         text_surface = font.render(text_label, True, (0, 0, 0))
-    #         text_rect = text_surface.get_rect(center=self.pos[node])
-    #         self.screen.blit(text_surface, text_rect)
+ 
     def _draw_nodes(self):
         """
         Draws nodes with a different color if they are clicked.
@@ -461,7 +423,7 @@ class ThreeSatGraphVisualizer:
             pygame.draw.circle(self.screen, node_color, self.pos[node], 25)
 
             lit = self.graph.nodes[node]['literal']
-            var_idx, neg = lit
+            var_idx, neg, clause_id = lit
             text_label = f"¬x{var_idx}" if neg else f"x{var_idx}"
 
             font = pygame.font.SysFont(None, 24)
@@ -471,21 +433,6 @@ class ThreeSatGraphVisualizer:
 
 
 
-    # def _draw_formula(self):
-    #     """
-    #     Draws the 3-CNF formula at the top of the screen.
-    #     Highlights literals when a node or edge is clicked.
-    #     """
-    #     font = pygame.font.SysFont(None, 32)
-
-    #     for c_idx, clause in enumerate(self.formula):
-    #         clause_text = " ∨ ".join([f"¬x{v}" if n else f"x{v}" for v, n in clause])
-
-    #         # ✅ Highlight if any part of the clause is clicked
-    #         color = (255, 0, 0) if any((c_idx, i) in self.highlighted_literals for i in range(len(clause))) else (0, 0, 0)
-
-    #         text_surface = font.render(f"({clause_text})", True, color)
-    #         self.screen.blit(text_surface, (20, 20 + c_idx * 40))  # Adjust Y-spacing
     def _draw_formula(self):
         """
         Draws the horizontal 3-CNF formula at the top of the screen with proper brackets.
@@ -495,7 +442,7 @@ class ThreeSatGraphVisualizer:
         font = pygame.font.SysFont(None, 32, bold=False)  # Use bold for better visibility
         screen_width = self.screen.get_width()
 
-        # ✅ Step 1: Define starting position
+        # ✅ Define starting position
         x_start = 50  # Left margin for rendering formula
         y_position = 30  # Vertical position at the top
         x_offset = x_start  # Tracks current X position
@@ -512,7 +459,7 @@ class ThreeSatGraphVisualizer:
             self.screen.blit(bracket_surface, (x_offset, y_position))
             x_offset += bracket_surface.get_width() + 5  # Spacing after `(`
 
-            for i, (var, neg) in enumerate(clause):
+            for i, (var, neg, clause_id) in enumerate(clause):  # ✅ Unpack correctly
                 literal_text = f"¬x{var}" if neg else f"x{var}"
                 color = (255, 0, 0) if (c_idx, i) in self.highlighted_literals else (0, 0, 0)
 
@@ -531,9 +478,90 @@ class ThreeSatGraphVisualizer:
             # ✅ Add closing bracket `)`
             bracket_surface = font.render(")", True, (0, 0, 0))
             self.screen.blit(bracket_surface, (x_offset, y_position))
-            x_offset += bracket_surface.get_width() + 15  # Spacing after `)`
+            x_offset += bracket_surface.get_width() + 15 
 
-        
+    def show_mapping(self, sat_assignment):
+        self.run()
+        """
+        Visualizes the solution mapping:
+        - Evaluates the SAT formula with the given assignments.
+        - Highlights nodes corresponding to literals that evaluate to 1.
+        - Updates the formula display with values.
+
+        Args:
+            sat_assignment: Dictionary mapping variables to their truth values (0/1).
+        """
+        # Convert SAT assignment to an Independent Set
+        independent_set = self.reduction.sol1tosol2(sat_assignment)
+
+        # Replace variables in the formula with their assigned values
+        formula_with_values = []
+        for clause in self.formula:
+            new_clause = []
+            for var, is_negated, _ in clause:
+                assigned_value = sat_assignment.get(var, None)
+                if assigned_value is None:
+                    new_clause.append(f"x{var}")  # Keep variable if missing from assignment
+                else:
+                    value = int(not assigned_value) if is_negated else int(assigned_value)  # Handle negation
+                    new_clause.append(str(value))
+
+            formula_with_values.append(f"({' ∨ '.join(new_clause)})")
+
+        formula_text = " ∧ ".join(formula_with_values)
+
+        # Print the formula with values for debugging
+        print(f"Formula with Assigned Values: {formula_text}")
+        print(f"Independent Set Nodes: {independent_set}")
+
+        # Highlight the nodes in the graph
+        self.highlighted_nodes = independent_set
+        independent_literals = self.reduction.sol1tosol2(sat_assignment)
+        # Refresh the visualization to display the updated formula and highlighted nodes
+        self._update_highlighted_literals(independent_literals)
+
+    def update_display(self, formula_text):
+        """
+        Updates the PyGame visualization by:
+        - Redrawing the formula with assigned truth values.
+        - Highlighting nodes in the independent set.
+        """
+        self.formula = formula_text  # Store the modified formula for display
+        self.draw_solution_mapping(formula_text)  # Redraw the visualization
+
+    def draw_solution_mapping(self, formula_text):
+        """
+        Draws the SAT formula with assigned truth values at the top of the screen.
+        Highlights the selected nodes that form the independent set.
+
+        Args:
+            formula_text (str): The formatted formula with assigned values.
+        """
+        self.screen.fill(BACKGROUND_COLOR)  # Clear screen
+
+        # ✅ Draw updated formula at the top
+        font = pygame.font.SysFont(None, 32, bold=False)
+        text_surface = font.render(formula_text, True, (0, 0, 0))  # Black text
+        self.screen.blit(text_surface, (50, 30))  # Draw formula at the top
+
+        # ✅ Draw edges (unaffected)
+        for u, v in self.graph.edges():
+            pygame.draw.line(self.screen, EDGE_COLOR, self.pos[u], self.pos[v], 2)
+
+        # ✅ Draw nodes with highlighting if in independent_set
+        for node in self.graph.nodes():
+            node_color = HIGHLIGHT_NODE_COLOR if node in self.highlighted_nodes else NODE_COLOR
+            pygame.draw.circle(self.screen, node_color, self.pos[node], RADIUS)
+
+            # Draw text inside node
+            font = pygame.font.SysFont(None, 24)
+            text_label = str(node)
+            text_surface = font.render(text_label, True, (0, 0, 0))
+            text_rect = text_surface.get_rect(center=self.pos[node])
+            self.screen.blit(text_surface, text_rect)
+
+        # ✅ Refresh screen
+        pygame.display.flip()
 
 def draw_curved_edge(screen, start, end, control, color):
     """
@@ -561,4 +589,5 @@ def is_edge_passing_through(start, end, node_pos):
     distance = abs((y2 - y1) * x - (x2 - x1) * y + x2 * y1 - y2 * x1) / math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2)
 
     return distance < 30  # Adjust threshold as needed
+
 
