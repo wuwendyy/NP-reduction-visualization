@@ -1,9 +1,7 @@
 import sys
-from element import Graph, Formula
-from helpers import Node, Edge
+from elements import Graph, Formula
 from three_sat_reduction import ThreeSatToIndependentSetReduction
 from three_sat_visualizer import ThreeSatGraphVisualizer
-import itertools
 
 # Example Formula
 formula = Formula()

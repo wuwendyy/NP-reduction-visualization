@@ -1,7 +1,8 @@
 import pygame
 import numpy as np
 import math
-from element import *
+
+from elements import Node, Edge, Graph
 
 # Test code for graph display
 if __name__ == "__main__":
@@ -9,41 +10,28 @@ if __name__ == "__main__":
     nodes = set()
     center = np.array([300, 300])
     radius = 150
-    node_count = 12
+    node_count = 39
 
     # Create nodes
     for i in range(node_count):
         node = Node(node_id=i, name=f"{i}")
         nodes.add(node)
 
-    # Create edges to form fully connected groups
+    # Create edges to form 3-membered fully connected groups
     edges = set()
     node_list = list(nodes)
 
-    # Create a 3-membered group
-    group1 = node_list[:3]
-    for a in range(3):
-        for b in range(a + 1, 3):
-            edges.add(Edge(group1[a], group1[b]))
-
-    # Create a 4-membered group
-    group2 = node_list[3:7]
-    for a in range(4):
-        for b in range(a + 1, 4):
-            edges.add(Edge(group2[a], group2[b]))
-
-    # Create a 5-membered group
-    group3 = node_list[7:12]
-    for a in range(5):
-        for b in range(a + 1, 5):
-            edges.add(Edge(group3[a], group3[b]))
-
-    # Connect the groups with single edges between one node from each group
-    edges.add(Edge(group1[0], group2[0]))
-    edges.add(Edge(group2[0], group3[0]))
-    edges.add(Edge(group3[0], group1[0]))
-
-    groups = [group1, group2, group3]
+    # Group nodes into 3-membered clusters and connect each group fully
+    groups = []
+    group_size = 3
+    for i in range(0, node_count, group_size):
+        group = node_list[i:i + group_size]
+        if len(group) == group_size:
+            groups.append(group)
+            # Fully connect the three nodes in the group
+            for a in range(group_size):
+                for b in range(a + 1, group_size):
+                    edges.add(Edge(group[a], group[b]))
 
     # Initialize and display the graph with bounding box and node radius
     bounding_box = np.array([[0, 0], [600, 600]])

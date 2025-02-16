@@ -1,20 +1,20 @@
-from abc import abstractmethod
-from helpers import *
 import numpy as np
 import math
 import pygame
 
+from abc import abstractmethod
+from elements.helpers import SATSolution, Variable, Clause
 
 class Element:
     # display to pygame
     @abstractmethod
     def display(self):
-        pass
+        raise NotImplementedError
 
     # parse in from file
     @abstractmethod
     def parse(self, filename):
-        pass
+        raise NotImplementedError
 
 
 class Graph(Element):
@@ -139,10 +139,14 @@ class Graph(Element):
             screen.blit(text_surface, text_rect)
 
 
-class Formula(Element):
-    clauses = []
+class Formula:
+    def __init__(self, bounding_box):
+        self.clauses = []
+        self.bounding_box = bounding_box
+        self.font = pygame.font.SysFont(None, 24)
 
     def parse(self, filename):
+        self.clauses = []  # Ensure fresh parsing each time
         counter = 0
         with open(filename, "r") as f:
             x = f.read().split("AND")
@@ -161,7 +165,6 @@ class Formula(Element):
                     clause.add_variable(var)
                     i += 2  # skip the AND part
                 self.clauses.append(clause)
-        f.close()
 
     """
     Return a list of list of tuples
@@ -183,12 +186,46 @@ class Formula(Element):
         return outer_list
 
     def evaluate(self, solution: SATSolution):
-        result = True
-        for c in self.clauses:
-            res = c.evaluate(solution)
-            result = result and res
-        return result
+        return all(c.evaluate(solution) for c in self.clauses)
 
-    def display(self):
-        # TODO
-        print(self.get_as_list())
+    def display(self, screen):
+        x, y = self.bounding_box[0]
+        max_width = self.bounding_box[1][0] - x
+        max_height = self.bounding_box[1][1] - y
+        line_height = 30  # Height of each line of text
+        current_x, current_y = x, y
+
+        clauses = self.get_as_list()
+        formatted_clauses = ["(" + " OR ".join([f"{'¬' if neg else ''}{var}" for var, neg, _ in clause]) + ")" for clause in clauses]
+        
+        text_lines = []
+        current_line = ""
+        
+        for clause in formatted_clauses:
+            temp_surface = self.font.render(current_line + (" AND " if current_line else "") + clause, True, (0, 0, 0))
+            temp_width = temp_surface.get_width()
+
+            # If adding this clause exceeds the bounding box width
+            if temp_width > max_width:
+                if not current_line:  # If the clause alone is too wide, raise an error
+                    raise ValueError(f"Clause '{clause}' is too wide to fit within the bounding box.")
+                
+                text_lines.append(current_line)  # Store the current line
+                current_line = clause  # Start a new line with the clause
+            else:
+                if current_line:
+                    current_line += " AND " + clause
+                else:
+                    current_line = clause
+        
+        if current_line:  # Append the last line if any remaining text
+            text_lines.append(current_line)
+
+        # Check if text fits within bounding box height
+        if len(text_lines) * line_height > max_height:
+            raise ValueError("Not enough space to display all clauses within the bounding box.")
+
+        # Render and blit each line
+        for i, line in enumerate(text_lines):
+            text_surface = self.font.render(line, True, (0, 0, 0))
+            screen.blit(text_surface, (x, y + i * line_height))

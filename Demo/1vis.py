@@ -3,7 +3,7 @@ import pygame
 import math
 sys.path.append("./Elements")
 
-from element import Graph, Formula, Node, Edge
+from elements import Graph, Formula, Node, Edge
 import itertools
 
 # Visualization Constants

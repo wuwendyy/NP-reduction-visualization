@@ -1,7 +1,5 @@
 import networkx as nx
 import itertools
-from element import Formula
-from helpers import Node, Edge
 
 class ThreeSatToIndependentSetReduction:
     def __init__(self, formula):
