@@ -13,7 +13,7 @@ class Element:
 
     # parse in from file
     @abstractmethod
-    def parse(self):
+    def parse(self, filename):
         pass
 
 
@@ -139,23 +139,13 @@ class Graph(Element):
             screen.blit(text_surface, text_rect)
 
 
-# Example Formula
-"""
-formula.clauses = [ #(var, is_negated, clause_idx)
-    [(1, False, 1), (2, True, 1), (3, False, 1)],
-    [(2, False, 2), (3, True, 2), (4, False, 2)],
-    [(1, False, 3), (2, True, 3), (4, False, 3)]
-]
-"""
-
-
 class Formula(Element):
     clauses = []
 
     def parse(self, filename):
         counter = 0
         with open(filename, "r") as f:
-            x = f.read().split("OR")
+            x = f.read().split("AND")
             for c in x:
                 counter += 1
                 c = c.strip()[1:-1]  # remove the parentheses
@@ -172,9 +162,16 @@ class Formula(Element):
                     i += 2  # skip the AND part
                 self.clauses.append(clause)
         f.close()
-        print(self.clauses)
 
-# return as a list of list of tuples
+    """
+    Return a list of list of tuples
+    formula.clauses = [ #(var, is_negated, clause_idx)
+        [('X1', False, 1), ('X2', True, 1), ('X3', False, 1)],
+        [('X2', False, 2), ('X3', True, 2), ('X4', False, 2)],
+        [('X1', False, 3), ('X2', True, 3), ('X4', False, 3)]
+    ]
+    """
+
     def get_as_list(self):
         outer_list = []
         for clause in self.clauses:
@@ -185,9 +182,13 @@ class Formula(Element):
             outer_list.append(inner_list)
         return outer_list
 
-    def evaluate(self):
+    def evaluate(self, solution: SATSolution):
+        result = True
         for c in self.clauses:
-            pass
+            res = c.evaluate(solution)
+            result = result and res
+        return result
 
     def display(self):
-        pass
+        # TODO
+        print(self.get_as_list())

@@ -21,6 +21,20 @@ class Edge:
         self.color = color
 
 
+class SATSolution:
+    """
+        {'X1': True, 'X2': True, 'X3': False, 'X4': False, 'X5': True}
+    """
+    solution = {}
+
+    def parse(self, filename):
+        with open(filename, "r") as file:
+            for line in file:
+                x = line.strip().split(": ")
+                self.solution[x[0]] = (x[1] == "True")
+        file.close()
+
+
 class Variable:
     def __init__(self, var_id, negate):
         self.var_id = var_id
@@ -37,21 +51,14 @@ class Clause:
     def add_variable(self, variable: Variable):
         self.variables.append(variable)
 
-    def test_print(self):
-        print(f"Clause: {self.clause_id}")
-        for v in self.variables:
-            print(f"ID: {v.var_id}, {v.negate}")
-
     # given a solution, evaluate if the clause is true
-    def evaluate(self, solution):
-        result = True
-        # for i in range(len(self.variables)):
-        #     v = self.variables[i]
-        #     b = solution[i]
-        #     if v.negate:
-        #         result = result or b
-        #     else:
-        #         result = result or not b
+    def evaluate(self, solution: SATSolution):
+        result = False
+        for v in self.variables:
+            assign = solution.solution[v.var_id]
+            if v.negate:
+                result = result or not assign
+            else:
+                result = result or assign
 
         return result
-
