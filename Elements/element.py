@@ -140,10 +140,10 @@ class Graph(Element):
 
 
 class Formula:
-    def __init__(self, bounding_box):
+    def __init__(self, bounding_box=np.array([[50, 50], [550, 550]])):
         self.clauses = []
         self.bounding_box = bounding_box
-        self.font = pygame.font.SysFont(None, 24)
+        self.font = None
 
     def parse(self, filename):
         self.clauses = []  # Ensure fresh parsing each time
@@ -189,6 +189,9 @@ class Formula:
         return all(c.evaluate(solution) for c in self.clauses)
 
     def display(self, screen):
+        if self.font is None:
+            self.font = pygame.font.SysFont(None, 24)
+        
         x, y = self.bounding_box[0]
         max_width = self.bounding_box[1][0] - x
         max_height = self.bounding_box[1][1] - y
