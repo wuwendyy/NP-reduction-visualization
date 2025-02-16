@@ -10,5 +10,5 @@ conda activate npvis
 Install pip Dependency
 ```
 cd NP-reduction-visualization
-pip install -r requirement.txt
+pip install -e .
 ```
