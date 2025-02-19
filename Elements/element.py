@@ -3,7 +3,8 @@ import math
 import pygame
 
 from abc import abstractmethod
-from elements.helpers import SATSolution, Variable, Clause
+from helpers import *
+
 
 class Element:
     # display to pygame
@@ -18,10 +19,12 @@ class Element:
 
 
 class Graph(Element):
+    name_dict = dict()  # stores name:node
+    groups = []
     '''
     Inputs: 
     nodes: set of Nodes
-    esges: set of Edges as nodes 
+    edges: set of Edges as nodes
     groups: list of list of node as groups. If it is not empty, assumes all nodes has group assignments 
     bounding box: 2*2 matrix of [x_min, y_min],[x_max, y_max]
     node radius: radius of (most) nodes 
@@ -38,18 +41,49 @@ class Graph(Element):
         self.node_radius = node_radius
 
     # placeholder print display
-    # def display(self):
+    # def print_display(self):
     #     print("Nodes:")
     #     for node in self.nodes:
     #         print(node.node_id)
     #     print("Edges:")
     #     for edge in self.edges:
-    #         print(f"( {edge.node1.node_id}, {edge.node2.node_id})")
+    #         print(f"({edge.node1.node_id}, {edge.node2.node_id})")
+    #     print("Groups:")
+    #     for group in self.groups:
+    #         for node in group:
+    #             print(f"{node.node_id}, ", end="")
+    #         print()
 
+    '''
+    Read in nodes, edges, and groups from a file
+    '''
     def parse(self, filename):
-        with open(filename, 'r') as file:
+        self.nodes = []  # Ensure fresh
+        self.edges = []
+        self.groups = []
+        with open(filename, "r") as file:
+            counter = 0
             for line in file:
-                pass
+                line = line.strip()
+                if line[0] == '(':  # edge
+                    names = line[1:-1].split(", ")
+                    node1 = self.name_dict.get(names[0])
+                    node2 = self.name_dict.get(names[1])
+                    e = Edge(node1, node2)
+                    self.edges.append(e)
+                    node1.add_neighbor(node2.node_id)
+                    node2.add_neighbor(node1.node_id)
+                elif line[0] == '[':  # group
+                    names = line[1:-1].split(", ")
+                    group = []
+                    for name in names:
+                        group.append(self.name_dict.get(name))
+                    self.groups.append(group)
+                else:  # node
+                    n = Node(counter, line)
+                    counter += 1
+                    self.nodes.append(n)
+                    self.name_dict[line] = n  # append to node_dict for future lookup
 
     def add_node(self, node):
         self.nodes.add(node)
@@ -191,7 +225,7 @@ class Formula:
     def display(self, screen):
         if self.font is None:
             self.font = pygame.font.SysFont(None, 24)
-        
+
         x, y = self.bounding_box[0]
         max_width = self.bounding_box[1][0] - x
         max_height = self.bounding_box[1][1] - y
@@ -199,11 +233,12 @@ class Formula:
         current_x, current_y = x, y
 
         clauses = self.get_as_list()
-        formatted_clauses = ["(" + " OR ".join([f"{'¬' if neg else ''}{var}" for var, neg, _ in clause]) + ")" for clause in clauses]
-        
+        formatted_clauses = ["(" + " OR ".join([f"{'¬' if neg else ''}{var}" for var, neg, _ in clause]) + ")" for
+                             clause in clauses]
+
         text_lines = []
         current_line = ""
-        
+
         for clause in formatted_clauses:
             temp_surface = self.font.render(current_line + (" AND " if current_line else "") + clause, True, (0, 0, 0))
             temp_width = temp_surface.get_width()
@@ -212,7 +247,7 @@ class Formula:
             if temp_width > max_width:
                 if not current_line:  # If the clause alone is too wide, raise an error
                     raise ValueError(f"Clause '{clause}' is too wide to fit within the bounding box.")
-                
+
                 text_lines.append(current_line)  # Store the current line
                 current_line = clause  # Start a new line with the clause
             else:
@@ -220,7 +255,7 @@ class Formula:
                     current_line += " AND " + clause
                 else:
                     current_line = clause
-        
+
         if current_line:  # Append the last line if any remaining text
             text_lines.append(current_line)
 

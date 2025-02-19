@@ -2,6 +2,8 @@ import numpy as np
 
 
 class Node:
+    neighbors = []  # store all neighbor node_id
+
     def __init__(self, node_id, name, selected="false", color=(0, 0, 255), location=np.array([0, 0])):
         self.node_id = node_id
         self.name = name
@@ -11,6 +13,9 @@ class Node:
 
     def change_color(self, new_color):
         self.color = new_color
+
+    def add_neighbor(self, neighbor):
+        self.neighbors.append(neighbor)
 
 
 class Edge:
