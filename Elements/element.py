@@ -3,7 +3,7 @@ import math
 import pygame
 
 from abc import abstractmethod
-from helpers import *
+from .helpers import *
 
 
 class Element:
