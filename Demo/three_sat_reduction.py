@@ -62,66 +62,6 @@ class ThreeSatToIndependentSetReduction:
 
         return G, clause_vertices, literal_to_formula_indices, literal_id_to_node_id
 
-    # def sol1tosol2(self, sat_assignment):
-    #     """
-    #     Convert a satisfying assignment of 3-SAT into an Independent Set solution.
-        
-    #     Args:
-    #         sat_assignment: Dictionary mapping variables to their truth values (0/1).
-
-    #     Returns:
-    #         A set of selected literals (tuples) forming an independent set.
-    #     """
-    #     print("\nConverting SAT assignment to Independent Set...\n")
-    #     independent_set = set()
-        
-    #     print(f"SAT Assignment: {sat_assignment}\n")
-
-    #     for var, value in sat_assignment.items():
-    #         lit = (var, value)  # Selects x if True, ¬x if False
-    #         print(f"  Processing Variable x{var} -> Assigned {value} -> Selecting Literal {lit}")
-
-    #         found = False
-    #         for c_idx in range(len(self.formula)):
-    #             if lit in self.formula[c_idx]:
-    #                 node_id = self.literal_id_to_node_id.get((lit, c_idx))
-    #                 if node_id is not None:
-    #                     independent_set.add(node_id)
-    #                     print(f"    Found in Clause {c_idx}: Node {node_id} added to Independent Set")
-    #                     found = True
-            
-    #         if not found:
-    #             print(f"    WARNING: Literal {lit} not found in any clause!")
-
-    #     print(f"\nIndependent Set Solution: {independent_set}\n")
-    #     print("Conversion to Independent Set completed!\n")
-    #     return independent_set
-
-    # def sol2tosol1(self, independent_set):
-    #     """
-    #     Convert an Independent Set solution back into a satisfying assignment for 3-SAT.
-        
-    #     Args:
-    #         independent_set: Set of selected nodes forming an independent set.
-
-    #     Returns:
-    #         A dictionary mapping variables to True/False values.
-    #     """
-    #     print("\nConverting Independent Set back to SAT assignment...\n")
-    #     sat_assignment = {}
-
-    #     print(f"Independent Set Input: {independent_set}\n")
-
-    #     for (literal, clause_idx), node_id in self.literal_id_to_node_id.items():
-    #         if node_id in independent_set:
-    #             var, is_not_negated = literal
-    #             sat_assignment[var] = not is_not_negated
-    #             print(f"  Node {node_id} corresponds to Literal {literal} in Clause {clause_idx}")
-    #             print(f"    Assigning Variable x{var} -> {'True' if not is_not_negated else 'False'}\n")
-
-    #     print(f"Recovered SAT Assignment: {sat_assignment}\n")
-    #     print("Conversion to SAT Assignment completed!\n")
-    #     return sat_assignment
 
     def sol1tosol2(self, sat_assignment):
         """
@@ -259,3 +199,18 @@ class ThreeSatToIndependentSetReduction:
         print(f"Recovered SAT Assignment (ordered): {ordered_assignment}\n")
         print("Conversion to SAT Assignment completed!\n")
         return ordered_assignment
+
+    def is_independent_set(self, node_set):
+        """
+        Checks if the given set of node_ids forms an independent set.
+        
+        :param node_set: set, the set of node IDs to check
+        :return: bool, True if it is an independent set, False otherwise.
+        """
+        node_set = set(node_set)  # Ensure it's a set for fast lookup
+
+        # Iterate over edges and check if both nodes are in the set
+        for u, v in self.graph.edges():
+            if u in node_set and v in node_set:
+                return False  # Found an edge within the set
+        return True

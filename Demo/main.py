@@ -1,5 +1,27 @@
 from three_sat_reduction import ThreeSatToIndependentSetReduction
 
+def evaluate_formula(formula, sat_assignment):
+    """
+    Evaluates whether a given CNF formula is satisfied by a variable assignment.
+
+    :param formula: List of clauses, where each clause is a list of literals (var_id, polarity).
+                    Example: [[(1, False), (2, True)], [(3, False)]]
+    :param sat_assignment: Dictionary mapping variable IDs to boolean values.
+                    Example: {1: True, 2: False, 3: True}
+    :return: bool, True if the formula is satisfied, False otherwise.
+    """
+    for clause in formula:
+        clause_satisfied = False  # Clause must have at least one True literal
+
+        for var, polarity in clause:
+            if sat_assignment.get(var, False) == polarity:  # Check if this literal is True
+                clause_satisfied = True
+                break  # No need to check more literals in this clause
+
+        if not clause_satisfied:
+            return False  # If any clause is False, formula is False
+
+    return True  # All clauses satisfied
 
 if __name__ == "__main__":
     formula = [
@@ -50,4 +72,10 @@ if __name__ == "__main__":
     recovered_assignment = reduction.sol2tosol1(independent_set)
     print("\nRecovered SAT Assignment:", recovered_assignment)
 
- 
+    IS_result = reduction.is_independent_set(independent_set)
+
+    print("\nIs it an independent set?", IS_result)
+
+    formula_result = evaluate_formula(formula, sat_assignment)
+    
+    print("\nDoes the formula evaluate to True?", formula_result)
