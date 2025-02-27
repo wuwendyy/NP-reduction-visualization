@@ -3,9 +3,9 @@ from three_sat_reduction import ThreeSatToIndependentSetReduction
 
 if __name__ == "__main__":
     formula = [
-        [(1, False), (2, True), (3, False)],   # Clause 1: ( x1 ∨ ¬x2 ∨ x3 )
-        [(2, False), (3, True), (4, False)],   # Clause 2: ( x2 ∨ x3 ∨ ¬x4 )
-        [(1, False), (2, True), (4, False)]    # Clause 3: ( x1 ∨ ¬x2 ∨ x4 )
+        [(1, False), (2, True), (3, True)],   # Clause 1: ( ¬x1 ∨ x2 ∨ x3 )
+        [(1, True), (2, False), (3, True)],   # Clause 2: ( x2 ∨ x3 ∨ ¬x4 )
+        [(1, False), (2, True), (4, True)]    # Clause 3: ( x1 ∨ ¬x2 ∨ x4 )
     ]
 
     reduction = ThreeSatToIndependentSetReduction(formula)
@@ -42,7 +42,7 @@ if __name__ == "__main__":
         print(edge)
 
     # Example assignment {x1=True, x2=False, x3=True, x4=False}
-    sat_assignment = {1: True, 2: False, 3: True, 4: False}
+    sat_assignment = {1: True, 2: True, 3: False, 4: False}
     independent_set = reduction.sol1tosol2(sat_assignment)
 
     print("\nIndependent Set:", independent_set)
