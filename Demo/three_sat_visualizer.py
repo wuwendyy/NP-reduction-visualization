@@ -15,7 +15,7 @@ HIGHLIGHT_COLOR = (255, 100, 100)  # Red highlight for selected nodes
 RADIUS = 20
 
 class ThreeSatGraphVisualizer:
-    def __init__(self, graph, clause_vertices, formula, literal_to_formula_indices, reduction, width=1000, height=700):
+    def __init__(self, graph, clause_vertices, formula, literal_to_formula_indices, literal_id_to_node_id, reduction, width=1000, height=700):
         """
         Args:
             graph: NetworkX graph containing 3-SAT nodes/edges.
@@ -33,6 +33,7 @@ class ThreeSatGraphVisualizer:
         self.width = width
         self.height = height
         self.reduction = reduction
+        self.literal_id_to_node_id = literal_id_to_node_id  # Added literal_id to node_id mapping
 
         # Initialize PyGame
         pygame.init()
@@ -271,46 +272,6 @@ class ThreeSatGraphVisualizer:
         return min(x1, x2) - 1 <= px <= max(x1, x2) + 1 and min(y1, y2) - 1 <= py <= max(y1, y2) + 1
 
 
-   
-    
-    # def _update_highlighted_literals(self, literals, clicked_edge=None):
-    #     """
-    #     Updates `self.highlighted_literals` and `self.highlighted_operators` based on user interaction.
-
-    #     - If a node is clicked → Highlight only that literal.
-    #     - If an edge is clicked:
-    #     - If it's between opposite literals (x, ¬x), highlight both in all corresponding clauses.
-    #     - If it's between different literals (x1, x2), highlight only the `∨` operator between them.
-    #     """
-    #     self.highlighted_literals.clear()  # ✅ Reset previous highlights
-    #     self.highlighted_operators.clear()  # ✅ Reset highlighted `∨` operators
-
-    #     if clicked_edge:
-    #         lit1, lit2 = clicked_edge
-
-    #         # ✅ If the edge is between a literal and its negation, highlight both occurrences
-    #         if lit1[0] == lit2[0] and lit1[1] != lit2[1]:  # Example: (x1, ¬x1)
-    #             for target_lit in [lit1, lit2]:
-    #                 if target_lit in self.literal_to_formula_indices:
-    #                     for clause_idx, literal_idx in self.literal_to_formula_indices[target_lit]:
-    #                         self.highlighted_literals.add((clause_idx, literal_idx))
-
-    #         else:
-    #             # ✅ If the edge is between different literals (x1, x2), highlight only the `∨` operator
-    #             for clause_idx, clause in enumerate(self.formula):
-    #                 indices = [i for i, lit in enumerate(clause) if lit in [lit1, lit2]]
-    #                 if len(indices) == 2:  # Ensure both literals exist in the same clause
-    #                     self.highlighted_operators.add((clause_idx, min(indices)))
-
-    #     else:
-    #         # ✅ If a node is clicked, highlight **only that literal in all occurrences**
-    #         for lit in literals:
-    #             if lit in self.literal_to_formula_indices:
-    #                 for clause_idx, literal_idx in self.literal_to_formula_indices[lit]:
-    #                     self.highlighted_literals.add((clause_idx, literal_idx))
-
-    #     print(f"Highlighted literals: {self.highlighted_literals}")
-    #     print(f"Highlighted operators: {self.highlighted_operators}")
 
     def _update_highlighted_literals(self, literals, clicked_edge=None):
         """

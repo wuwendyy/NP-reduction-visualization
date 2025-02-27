@@ -1,134 +1,66 @@
 import networkx as nx
-import itertools
 
 class ThreeSatToIndependentSetReduction:
     def __init__(self, formula):
         """
-        Initialize the reduction from 3-SAT to Independent Set.
+        Initializes the reduction with a given 3-SAT formula.
+        
         Args:
-            formula: Formula object containing clauses and variables.
+            formula: List of clauses, where each clause is a list of literals.
+                     Example: [[(1, False), (2, True), (3, False)], ...]
         """
         self.formula = formula
-        self.formula.variables = self._extract_variables()
-        self.graph = nx.Graph()
-        self.node_mapping = {}  # Maps (clause_idx, literal_idx) -> node_id
-        self.assignment_mapping = {}  # Maps variable assignments to nodes
-        self._build_graph()
+        self.graph, self.clause_vertices, self.literal_to_formula_indices, self.literal_id_to_node_id = self.build_3sat_graph_from_formula()
 
-    def _extract_variables(self):
+    def build_3sat_graph_from_formula(self):
         """
-        Extract unique variables from the formula clauses.
-        """
-        variables = set()
-        for clause in self.formula.clauses:
-            for literal in clause:
-                variables.add(literal[0])
-        return variables
+        Constructs a 3-SAT graph for visualization.
 
-    # def _build_graph(self):
-    
-    def _build_graph(self):
-        """
-        Construct the Independent Set graph from the 3-SAT formula.
-        """
-        node_id = 0
-        for c_idx, clause in enumerate(self.formula.clauses):
-            clause_nodes = []
-            for lit_idx, literal in enumerate(clause):
-                var, is_negated, clause_idx = literal
-                node_label = f"{var}"  # ✅ Only display variable number, store full info internally
-
-                # ✅ Store metadata for this node
-                self.graph.add_node(
-                    node_id,
-                    literal=literal,
-                    var=var,
-                    is_negated=is_negated,
-                    clause_idx=clause_idx,  # ✅ Clause index now explicitly stored
-                    lit_idx=lit_idx,
-                    label=node_label
-                )
-
-                self.node_mapping[(c_idx, lit_idx)] = node_id
-                clause_nodes.append(node_id)
-
-                # ✅ Ensure we store ALL occurrences uniquely per clause
-                if (var, is_negated, clause_idx) not in self.assignment_mapping:
-                    self.assignment_mapping[(var, is_negated, clause_idx)] = []
-                self.assignment_mapping[(var, is_negated, clause_idx)].append(node_id)
-
-                node_id += 1
-
-            # Create edges within each clause (ensuring at most one can be picked in an independent set)
-            for u, v in itertools.combinations(clause_nodes, 2):
-                self.graph.add_edge(u, v)
-
-        # Add conflict edges between literals and their negations
-        for var in self.formula.variables:
-            pos_nodes = [n for key, nodes in self.assignment_mapping.items() if key[0] == var and key[1] == True for n in nodes]
-            neg_nodes = [n for key, nodes in self.assignment_mapping.items() if key[0] == var and key[1] == False for n in nodes]
-
-            for u in pos_nodes:
-                for v in neg_nodes:
-                    self.graph.add_edge(u, v)  # ✅ Now conflicts apply to ALL instances
-
-    #     """
-    #     Construct the Independent Set graph from the 3-SAT formula.
-    #     """
-    #     node_id = 0
-    #     for c_idx, clause in enumerate(self.formula.clauses):
-    #         clause_nodes = []
-    #         for lit_idx, literal in enumerate(clause):
-    #             node_label = f"{literal}"
-    #             self.graph.add_node(node_id, literal=literal, label=node_label)
-    #             self.node_mapping[(c_idx, lit_idx)] = node_id
-    #             clause_nodes.append(node_id)
-
-    #             # Store variable-to-node mapping
-    #             var, is_negated = literal
-    #             if var not in self.assignment_mapping:
-    #                 self.assignment_mapping[var] = {}
-    #             self.assignment_mapping[var][is_negated] = node_id
-
-    #             node_id += 1
-            
-    #         # Create edges within each clause (ensuring at most one can be picked in an independent set)
-    #         for u, v in itertools.combinations(clause_nodes, 2):
-    #             self.graph.add_edge(u, v)
-        
-    #     # Add conflict edges between literals and their negations
-    #     for var in self.assignment_mapping:
-    #         if True in self.assignment_mapping[var] and False in self.assignment_mapping[var]:
-    #             u = self.assignment_mapping[var][True]
-    #             v = self.assignment_mapping[var][False]
-    #             self.graph.add_edge(u, v)
-
-    def build_3sat_graph_from_formula(self):  # should extend input1_to_input_2
-        """
-        Constructs the 3-SAT graph for visualization.
         Returns:
             G: NetworkX graph representing the problem.
             clause_vertices: List of lists mapping clause indices to their corresponding node IDs.
-            formula: The original 3-SAT formula.
             literal_to_formula_indices: A mapping of literals to positions in the formula.
+            literal_id_to_node_id: Mapping from (literal, clause_idx) → node_id for faster lookups.
         """
-        G = self.graph
+        G = nx.Graph()
         clause_vertices = []
+        literal_id_to_node_id = {}
         literal_to_formula_indices = {}
+        node_id = 1  # Node index counter
 
-        for c_idx, clause in enumerate(self.formula.clauses):
-            clause_nodes = []
+        for c_idx, clause in enumerate(self.formula):
+            c_nodes = []
             for lit_idx, literal in enumerate(clause):
-                node_id = self.node_mapping[(c_idx, lit_idx)]
-                clause_nodes.append(node_id)
-
+                G.add_node(node_id, literal=literal, clause_index=c_idx)
+                c_nodes.append(node_id)
+                
+                # Store mappings
+                literal_id_to_node_id[(literal, c_idx)] = node_id
                 if literal not in literal_to_formula_indices:
                     literal_to_formula_indices[literal] = []
                 literal_to_formula_indices[literal].append((c_idx, lit_idx))
 
-            clause_vertices.append(clause_nodes)
+                node_id += 1
 
-        return G, clause_vertices, self.formula.clauses, literal_to_formula_indices
+            # Ensure the clause forms a triangle (3 literals) or a single edge (2 literals)
+            if len(c_nodes) == 3:
+                G.add_edges_from([(c_nodes[0], c_nodes[1]), (c_nodes[1], c_nodes[2]), (c_nodes[2], c_nodes[0])])
+            elif len(c_nodes) == 2:
+                G.add_edge(c_nodes[0], c_nodes[1])
+
+            clause_vertices.append(c_nodes)
+
+        # Add edges between complementary literals (x and ¬x) across clauses
+        for c_idx in range(len(self.formula) - 1):  # Check neighboring clauses
+            for literal in self.formula[c_idx]:
+                opposite_literal = (literal[0], not literal[1])  # Flip negation
+                if opposite_literal in self.formula[c_idx + 1]:
+                    node1 = literal_id_to_node_id.get((literal, c_idx))
+                    node2 = literal_id_to_node_id.get((opposite_literal, c_idx + 1))
+                    if node1 is not None and node2 is not None and not G.has_edge(node1, node2):
+                        G.add_edge(node1, node2)
+
+        return G, clause_vertices, literal_to_formula_indices, literal_id_to_node_id
 
     # def sol1tosol2(self, sat_assignment):
     #     """
@@ -138,78 +70,55 @@ class ThreeSatToIndependentSetReduction:
     #         sat_assignment: Dictionary mapping variables to their truth values (0/1).
 
     #     Returns:
-    #         A set of selected nodes forming an independent set.
+    #         A set of selected literals (tuples) forming an independent set.
     #     """
+    #     print("\nConverting SAT assignment to Independent Set...\n")
     #     independent_set = set()
-
-    #     for clause in self.formula.clauses:
-    #         for var, is_negated, clause_idx in clause:
-    #             # Determine the literal's truth value based on negation
-    #             assigned_value = sat_assignment.get(var, None)
-                
-    #             if assigned_value is None:
-    #                 print(f"⚠ Warning: Variable {var} not found in assignment!")
-    #                 continue  # Skip if the variable is missing
-
-    #             # A negated literal is True if its assigned value is False (0)
-    #             literal_evaluates_to_1 = (not assigned_value if is_negated else assigned_value)
-
-    #             if literal_evaluates_to_1:
-    #                 # Retrieve the corresponding node from node mapping
-    #                 if (clause_idx, clause.index((var, is_negated, clause_idx))) in self.node_mapping:
-    #                     node_id = self.node_mapping[(clause_idx, clause.index((var, is_negated, clause_idx)))]
-    #                     independent_set.add(node_id)
-    #                     print(f"✔ Literal ({var}, {'¬' if is_negated else ''}{assigned_value}) in Clause {clause_idx} -> Node {node_id} added")
-
-    #     print(f"🔹 Independent Set Nodes: {independent_set}")
-    #     return independent_set
-    def sol1tosol2(self, sat_assignment):
-        """
-        Convert a satisfying assignment of 3-SAT into an Independent Set solution.
         
-        Args:
-            sat_assignment: Dictionary mapping variables to their truth values (0/1).
+    #     print(f"SAT Assignment: {sat_assignment}\n")
 
-        Returns:
-            A set of selected literals (tuples) forming an independent set.
-        """
-        independent_literals = set()
+    #     for var, value in sat_assignment.items():
+    #         lit = (var, value)  # Selects x if True, ¬x if False
+    #         print(f"  Processing Variable x{var} -> Assigned {value} -> Selecting Literal {lit}")
 
-        for clause in self.formula.clauses:
-            for var, is_negated, clause_idx in clause:
-                assigned_value = sat_assignment.get(var, None)
+    #         found = False
+    #         for c_idx in range(len(self.formula)):
+    #             if lit in self.formula[c_idx]:
+    #                 node_id = self.literal_id_to_node_id.get((lit, c_idx))
+    #                 if node_id is not None:
+    #                     independent_set.add(node_id)
+    #                     print(f"    Found in Clause {c_idx}: Node {node_id} added to Independent Set")
+    #                     found = True
+            
+    #         if not found:
+    #             print(f"    WARNING: Literal {lit} not found in any clause!")
 
-                if assigned_value is None:
-                    print(f"⚠ Warning: Variable {var} not found in assignment!")
-                    continue  # Skip if the variable is missing
+    #     print(f"\nIndependent Set Solution: {independent_set}\n")
+    #     print("Conversion to Independent Set completed!\n")
+    #     return independent_set
 
-                # A negated literal is True if its assigned value is False (0)
-                literal_evaluates_to_1 = (not assigned_value if is_negated else assigned_value)
+    # def sol2tosol1(self, independent_set):
+    #     """
+    #     Convert an Independent Set solution back into a satisfying assignment for 3-SAT.
+        
+    #     Args:
+    #         independent_set: Set of selected nodes forming an independent set.
 
-                if literal_evaluates_to_1:
-                    independent_literals.add((var, is_negated, clause_idx))  # ✅ Directly store the literal
+    #     Returns:
+    #         A dictionary mapping variables to True/False values.
+    #     """
+    #     print("\nConverting Independent Set back to SAT assignment...\n")
+    #     sat_assignment = {}
 
-        print(f"🔹 Independent Set Literals: {independent_literals}")
-        return independent_literals  # ✅ Return literals instead of node IDs
+    #     print(f"Independent Set Input: {independent_set}\n")
 
+    #     for (literal, clause_idx), node_id in self.literal_id_to_node_id.items():
+    #         if node_id in independent_set:
+    #             var, is_negated = literal
+    #             sat_assignment[var] = not is_negated
+    #             print(f"  Node {node_id} corresponds to Literal {literal} in Clause {clause_idx}")
+    #             print(f"    Assigning Variable x{var} -> {'True' if not is_negated else 'False'}\n")
 
-    def sol2tosol1(self, independent_set):
-        """
-        Convert an Independent Set solution back into a satisfying assignment for 3-SAT.
-        Args:
-            independent_set: Set of selected nodes forming an independent set.
-        Returns:
-            A dictionary mapping variables to True/False values.
-        """
-        assignment = {var: False for var in self.formula.variables}
-        for var in self.assignment_mapping:
-            for value, node_id in self.assignment_mapping[var].items():
-                if node_id in independent_set:
-                    assignment[var] = value
-                    break
-        return assignment  
-    
-    
-
-
-
+    #     print(f"Recovered SAT Assignment: {sat_assignment}\n")
+    #     print("Conversion to SAT Assignment completed!\n")
+    #     return sat_assignment
