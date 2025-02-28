@@ -76,14 +76,26 @@ if __name__ == "__main__":
         print(f"Clause {idx + 1}: {clause}")
 
     # Print the graph nodes
-    print("\nGraph Nodes (ID → Literal):")
-    for node, data in graph.nodes(data=True):
-        print(f"Node {node}: {data['literal']} (Clause {data['clause_index']})")
+    # print("\nGraph Nodes (ID → Literal):")
+    # for node, data in graph.nodes(data=True):
+    #     print(f"Node {node}: {data['literal']} (Clause {data['clause_index']})")
+    print("\nGraph Nodes (Detailed Info):")
+    for node in graph.nodes:
+        node_info = {
+            "ID": node.node_id,
+            "Literal": node.name,
+            "Color": node.color,
+            "Location": node.location.tolist(),  # Convert numpy array to list
+            "Neighbors": node.neighbors
+        }
+        print(node_info)
 
+    
     # Print the graph edges
     print("\nGraph Edges:")
-    for edge in graph.edges():
-        print(edge)
+    for edge in graph.edges:  # No () since `edges` is a set
+        print(f"Edge between {edge.node1.name} and {edge.node2.name}, Color: {edge.color}")
+
 
     # Example assignment {x1=True, x2=False, x3=True, x4=False}
     sat_assignment = {1: True, 2: True, 3: False, 4: False}
