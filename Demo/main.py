@@ -1,5 +1,8 @@
 from three_sat_reduction import ThreeSatToIndependentSetReduction
 
+from Elements.helpers import *
+from Elements.element import * 
+
 def evaluate_formula(formula, sat_assignment):
     """
     Evaluates whether a given CNF formula is satisfied by a variable assignment.
@@ -10,10 +13,10 @@ def evaluate_formula(formula, sat_assignment):
                     Example: {1: True, 2: False, 3: True}
     :return: bool, True if the formula is satisfied, False otherwise.
     """
-    for clause in formula:
+    for clause in formula.get_as_list():
         clause_satisfied = False  # Clause must have at least one True literal
 
-        for var, polarity in clause:
+        for var, polarity, clause_id, id in clause:
             if sat_assignment.get(var, False) == polarity:  # Check if this literal is True
                 clause_satisfied = True
                 break  # No need to check more literals in this clause
@@ -42,15 +45,42 @@ def print_formula(formula):
     
     print(" ∧ ".join(formula_str))  # Join clauses with "AND"
 
+def construct_formula(clause_list):
+        """
+        Constructs a Formula object from a list of clauses.
 
+        Args:
+            clause_list (list): A list of clauses, where each clause is a list of tuples
+                                (var_id, is_negated).
+
+        Returns:
+            Formula: A Formula object containing all the clauses.
+        """
+        formula_obj = Formula()
+        
+        id = 1
+        for clause_idx, clause in enumerate(clause_list, start=1):  # Clause IDs start from 1
+            clause_obj = Clause(clause_idx)
+            
+            for var_id, is_negated in clause:
+                variable = Variable(var_id, is_negated, id)
+                clause_obj.add_variable(variable)
+                id += 1  # Increment ID for each variable
+
+            formula_obj.clauses.append(clause_obj)
+
+        return formula_obj
+                
 if __name__ == "__main__":
-    formula = [
+    prim_formula = [
         [(1, False), (2, True), (3, True)],   # Clause 1: ( ¬x1 ∨ x2 ∨ x3 )
         [(1, True), (2, False), (3, True)],   # Clause 2: ( x2 ∨ x3 ∨ ¬x4 )
         [(1, False), (2, True), (4, True)]    # Clause 3: ( x1 ∨ ¬x2 ∨ x4 )
     ]
 
-    print_formula(formula)
+    formula = construct_formula(prim_formula)
+    
+    # print_formula(formula)
     
     reduction = ThreeSatToIndependentSetReduction(formula)
 
@@ -58,18 +88,20 @@ if __name__ == "__main__":
     graph = reduction.graph
     clause_vertices = reduction.clause_vertices
     literal_to_formula_indices = reduction.literal_to_formula_indices
+    lit_to_node_id = reduction.lit_to_node_id
     literal_id_to_node_id = reduction.literal_id_to_node_id
+
+    print("Literal ID to Node ID Mapping:")
+    for literal, node in literal_id_to_node_id.items():
+        print(f"Literal: {literal} → Node ID: {node}")
+
 
     # Print the mapping from literals to nodes
     print("\nLiteral to Node Mapping:")
-    for (literal, clause_idx), node_id in literal_id_to_node_id.items():
+    for (literal, clause_idx), node_id in lit_to_node_id.items():
         print(f"Literal {literal} in Clause {clause_idx} -> Node ID {node_id}")
 
-    # Print the literal_id to node_id mapping
-    print("\nLiteral ID to Node ID Mapping:")
-    for (literal, clause_idx), node_id in literal_id_to_node_id.items():
-        print(f"Literal {literal} in Clause {clause_idx} -> Node ID {node_id}")
-
+    
     # Ensure Clause 3 is included
     print("\nClause Vertices:")
     for idx, clause in enumerate(clause_vertices):
