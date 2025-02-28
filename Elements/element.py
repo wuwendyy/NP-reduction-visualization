@@ -204,6 +204,27 @@ class Formula:
     ]
     """
     
+    def parse(self, filename):
+        self.clauses = []  # Ensure fresh parsing each time
+        counter = 0
+        with open(filename, "r") as f:
+            x = f.read().split("AND")
+            for c in x:
+                counter += 1
+                c = c.strip()[1:-1]  # remove the parentheses
+                clause = Clause(counter)
+                v = c.split()
+                i = 0
+                while i < len(v):
+                    negate = False
+                    if v[i] == "NOT":
+                        negate = True
+                        i += 1
+                    var = Variable(v[i], negate)
+                    clause.add_variable(var)
+                    i += 2  # skip the AND part
+                self.clauses.append(clause)
+    
     def get_as_list(self):
         """
         Convert clauses into a list of lists of Variable objects.
