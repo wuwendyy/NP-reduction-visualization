@@ -44,12 +44,25 @@ class SATSolution:
 
 
 class Variable:
-    def __init__(self, name, negate, id):
+    def __init__(self, name, is_not_negated, cid, id):
         self.name = name
-        self.negate = negate
+        self.is_not_negated = is_not_negated
+        self.clause_id = cid
         self.id = id
+        
+    def __str__(self):
+        """
+        Custom string representation for printing.
+        """
+        sign = "" if self.is_not_negated else "¬"  # Use "¬" for negated literals
+        return f"Variable({sign}x{self.name}, Clause {self.clause_id}, ID {self.id})"
 
-
+    def __repr__(self):
+        """
+        Custom representation for debugging and lists.
+        """
+        return self.__str__()
+        
 class Clause:
     variables = []
 

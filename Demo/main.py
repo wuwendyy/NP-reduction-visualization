@@ -16,10 +16,16 @@ def evaluate_formula(formula, sat_assignment):
     for clause in formula.get_as_list():
         clause_satisfied = False  # Clause must have at least one True literal
 
-        for var, polarity, clause_id, id in clause:
-            if sat_assignment.get(var, False) == polarity:  # Check if this literal is True
+        for literal in clause:
+            var = literal.name
+            is_not_negated = literal.is_not_negated
+            clause_id = literal.clause_id
+            id = literal.id  # (i, False) → ¬x_i, (i, True) → x_i
+
+            if sat_assignment.get(var, True) == is_not_negated:  # Check if this literal is True
                 clause_satisfied = True
-                break  # No need to check more literals in this clause
+            elif sat_assignment.get(var, False) != is_not_negated:
+                clause_satisfied = True
 
         if not clause_satisfied:
             return False  # If any clause is False, formula is False
@@ -51,21 +57,22 @@ def construct_formula(clause_list):
 
         Args:
             clause_list (list): A list of clauses, where each clause is a list of tuples
-                                (var_id, is_negated).
+                                (var_id, is_not_negated).
 
         Returns:
             Formula: A Formula object containing all the clauses.
         """
         formula_obj = Formula()
         
-        id = 1
+        lit_id = 1
         for clause_idx, clause in enumerate(clause_list, start=1):  # Clause IDs start from 1
             clause_obj = Clause(clause_idx)
             
-            for var_id, is_negated in clause:
-                variable = Variable(var_id, is_negated, id)
+            for var_id, is_not_negated in clause:
+                variable = Variable(var_id, is_not_negated, clause_idx,  lit_id)
+                print(variable)
                 clause_obj.add_variable(variable)
-                id += 1  # Increment ID for each variable
+                lit_id += 1  # Increment ID for each variable
 
             formula_obj.clauses.append(clause_obj)
 

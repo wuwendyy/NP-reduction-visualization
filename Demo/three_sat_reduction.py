@@ -50,49 +50,12 @@ class ThreeSatToIndependentSetReduction:
 
         formula_list = self.formula.get_as_list() 
         
-        
-        
-        
-        # for c_idx, clause in enumerate(self.formula.get_as_list()):
-        #     c_nodes = []
-        #     for lit_idx, literal in enumerate(clause):
-        #         node = Node(node_id, str(literal))  # Create a new Node
-        #         G.add_node(node)
-        #         c_nodes.append(node)
-
-        #         # Store mappings
-        #         lit_to_node_id[(literal, c_idx)] = node
-        #         if literal not in literal_to_formula_indices:
-        #             literal_to_formula_indices[literal] = []
-        #         literal_to_formula_indices[literal].append((c_idx, lit_idx))
-
-        #         node_id += 1
-
-        #     # Ensure the clause forms a triangle (3 literals) or a single edge (2 literals)
-        #     if len(c_nodes) == 3:
-        #         G.add_edge(Edge(c_nodes[0], c_nodes[1]))
-        #         G.add_edge(Edge(c_nodes[1], c_nodes[2]))
-        #         G.add_edge(Edge(c_nodes[2], c_nodes[0]))
-        #     elif len(c_nodes) == 2:
-        #         G.add_edge(Edge(c_nodes[0], c_nodes[1]))
-
-        #     clause_vertices.append(c_nodes)
-
-        # # Add edges between complementary literals (x and ¬x) across clauses
-        # for c_idx in range(len(self.formula) - 1):  # Check neighboring clauses
-        #     for literal in self.formula[c_idx]:
-        #         opposite_literal = (literal[0], not literal[1])  # Flip negation
-        #         if opposite_literal in self.formula[c_idx + 1]:
-        #             node1 = lit_to_node_id.get((literal, c_idx))
-        #             node2 = lit_to_node_id.get((opposite_literal, c_idx + 1))
-        #             if node1 is not None and node2 is not None:
-        #                 G.add_edge(Edge(node1, node2))
-
-        # Construct nodes and mappings
         for c_idx, clause in enumerate(formula_list):
             c_nodes = []
 
             for lit_idx, literal in enumerate(clause):
+                print (literal)
+                print(lit_idx)
                 node = Node(node_id, str(literal))  # Create a new Node
                 G.add_node(node)
                 c_nodes.append(node)
@@ -100,7 +63,8 @@ class ThreeSatToIndependentSetReduction:
                 # Store mappings
                 lit_to_node_id[(literal, c_idx)] = node  # Maps (literal, clause index) to Node object
                 literal_to_formula_indices.setdefault(literal, []).append((c_idx, lit_idx))
-                literal_id_to_node_id[literal[-1]] = node_id  # Store only literal_id -> node_id mapping
+                print(f"Literal ID: {literal.id} → Node ID: {node_id}")
+                literal_id_to_node_id[literal.id] = node_id  # Store only literal_id -> node_id mapping
 
                 node_id += 1  # Increment node ID
 
@@ -117,7 +81,7 @@ class ThreeSatToIndependentSetReduction:
             next_clause = formula_list[c_idx + 1]
 
             for literal in current_clause:
-                opposite_literal = (literal[0], not literal[1])  # Flip negation
+                opposite_literal = (literal.name, not literal.is_not_negated)  # Flip negation
                 if opposite_literal in next_clause:
                     node1 = lit_to_node_id.get((literal, c_idx))
                     node2 = lit_to_node_id.get((opposite_literal, c_idx + 1))
@@ -148,7 +112,10 @@ class ThreeSatToIndependentSetReduction:
 
         for c_idx, clause in enumerate(formula_list):  # Use the correct formula list
             for literal in clause:
-                var, is_not_negated, clause_id, id = literal  # (i, False) → ¬x_i, (i, True) → x_i
+                var = literal.name
+                is_not_negated = literal.is_not_negated
+                clause_id = literal.clause_id
+                id = literal.id  # (i, False) → ¬x_i, (i, True) → x_i
 
                 # Check if the assignment satisfies the literal
                 if (sat_assignment[var] == 1 and is_not_negated) or (sat_assignment[var] == 0 and not is_not_negated):
@@ -255,8 +222,12 @@ class ThreeSatToIndependentSetReduction:
         # Assign values based on selected nodes in the independent set
         for (literal, clause_idx), node in self.lit_to_node_id.items():
             if node.node_id in independent_set:
-                var, is_not_negated, clause_id, id = literal
-                sat_assignment[var] = is_not_negated  # True if not negated, False otherwise
+                var = literal.name
+                is_not_negated = literal.is_not_negated
+                clause_id = literal.clause_id
+                id = literal.id  # (i, False) → ¬x_i, (i, True) → x_i
+
+                sat_assignment[var] = is_not_negated  # 1 = 1, not 0 = 1
 
                 self.output2_to_output1[node] = literal  # Reverse mapping
 
@@ -265,13 +236,18 @@ class ThreeSatToIndependentSetReduction:
 
         # Ensure all variables in the formula are assigned a value
         # all_vars = {var for clause in formula_list for var, _ in clause}  # ✅ Fix: Using correct formula structure
-        all_vars = {literal[0] for clause in formula_list for literal in clause}
+        all_vars = {literal.name for clause in formula_list for literal in clause}
 
         for var in sorted(all_vars):
             if var not in sat_assignment:
                 for clause in formula_list:  # ✅ Fix: Iterate over structured formula list
                     for literal in clause:
-                        lit_var, is_not_negated, clause_id, id = literal
+                        
+                        lit_var = literal.name
+                        is_not_negated = literal.is_not_negated
+                        clause_id = literal.clause_id
+                        id = literal.id  # (i, False) → ¬x_i, (i, True) → x_i
+
                         if lit_var == var:
                             sat_assignment[var] = not is_not_negated  # Assign based on literal negation
                             print(f"  Variable x{var} missing from independent set. Found literal {literal}. Assigning x{var} -> {sat_assignment[var]}\n")

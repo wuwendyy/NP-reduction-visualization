@@ -94,6 +94,18 @@ class Graph(Element):
     def hasEdge(self, node1, node2):
         return any(edge.node1 == node1 and edge.node2 == node2 or edge.node1 == node2 and edge.node2 == node1 for edge in self.edges)
 
+    def get_node_by_id(self, node_id):
+        """
+        Retrieve a node from the graph using its node_id.
+
+        Args:
+            node_id: The ID of the node to retrieve.
+
+        Returns:
+            Node object if found, else None.
+        """
+        return next((node for node in self.nodes if node.node_id == node_id), None)
+
     '''
     Helper function in determine the node positions 
     '''
@@ -181,7 +193,7 @@ class Formula:
         self.clauses = []
         self.bounding_box = bounding_box
         self.font = None
-        
+        self.literal_dict = {}  # Dictionary to map literal_id to (name, negate, clause_id)
 
     """
     Return a list of list of tuples
@@ -191,16 +203,39 @@ class Formula:
         [('X1', False, 3, 7), ('X2', True, 3, 8), ('X4', False, 3, 9)]
     ]
     """
-
+    
     def get_as_list(self):
+        """
+        Convert clauses into a list of lists of Variable objects.
+        Also builds a dictionary mapping literal_id to Variable instances.
+
+        Returns:
+            List[List[Variable]]: A list of clauses, where each clause is a list of Variable objects.
+        """
         outer_list = []
+        self.literal_dict = {}  # Reset the dictionary before populating
+
         for clause in self.clauses:
             inner_list = []
             for var in clause.variables:
-                tup = (var.name, var.negate, clause.clause_id, var.id)
-                inner_list.append(tup)
+                inner_list.append(var)
+                self.literal_dict[var.id] = var  # Map var.id → var object
             outer_list.append(inner_list)
+
         return outer_list
+
+
+    def get_literal_by_id(self, literal_id):
+        """
+        Retrieve a literal based on its ID.
+
+        Args:
+            literal_id: The ID of the literal to retrieve.
+
+        Returns:
+            A tuple (name, is_negated, clause_id) if found, else None.
+        """
+        return self.literal_dict.get(literal_id)
 
     def evaluate(self, solution: SATSolution):
         return all(c.evaluate(solution) for c in self.clauses)
