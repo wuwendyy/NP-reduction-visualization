@@ -90,6 +90,9 @@ class Graph(Element):
 
     def add_edge(self, edge):
         self.edges.add(edge)
+        
+    def hasEdge(self, node1, node2):
+        return any(edge.node1 == node1 and edge.node2 == node2 or edge.node1 == node2 and edge.node2 == node1 for edge in self.edges)
 
     '''
     Helper function in determine the node positions 
@@ -178,34 +181,14 @@ class Formula:
         self.clauses = []
         self.bounding_box = bounding_box
         self.font = None
-
-    def parse(self, filename):
-        self.clauses = []  # Ensure fresh parsing each time
-        counter = 0
-        with open(filename, "r") as f:
-            x = f.read().split("AND")
-            for c in x:
-                counter += 1
-                c = c.strip()[1:-1]  # remove the parentheses
-                clause = Clause(counter)
-                v = c.split()
-                i = 0
-                while i < len(v):
-                    negate = False
-                    if v[i] == "NOT":
-                        negate = True
-                        i += 1
-                    var = Variable(v[i], negate)
-                    clause.add_variable(var)
-                    i += 2  # skip the AND part
-                self.clauses.append(clause)
+        
 
     """
     Return a list of list of tuples
     formula.clauses = [ #(var, is_negated, clause_idx)
-        [('X1', False, 1), ('X2', True, 1), ('X3', False, 1)],
-        [('X2', False, 2), ('X3', True, 2), ('X4', False, 2)],
-        [('X1', False, 3), ('X2', True, 3), ('X4', False, 3)]
+        [('X1', False, 1, 1), ('X2', True, 1, 2), ('X3', False, 1, 3)],
+        [('X2', False, 2, 4), ('X3', True, 2, 5), ('X4', False, 2, 6)],
+        [('X1', False, 3, 7), ('X2', True, 3, 8), ('X4', False, 3, 9)]
     ]
     """
 
@@ -214,7 +197,7 @@ class Formula:
         for clause in self.clauses:
             inner_list = []
             for var in clause.variables:
-                tup = (var.var_id, var.negate, clause.clause_id)
+                tup = (var.name, var.negate, clause.clause_id, var.id)
                 inner_list.append(tup)
             outer_list.append(inner_list)
         return outer_list

@@ -5,7 +5,7 @@ class Node:
     neighbors = []  # store all neighbor node_id
 
     def __init__(self, node_id, name, selected="false", color=(0, 0, 255), location=np.array([0, 0])):
-        self.node_id = node_id
+        self.node_id = node_id  # unique id
         self.name = name
         self.selected = selected
         self.color = color
@@ -16,6 +16,9 @@ class Node:
 
     def add_neighbor(self, neighbor):
         self.neighbors.append(neighbor)
+        
+    def __repr__(self):
+        return f"Node(ID={self.node_id}, Name={self.name}, Location={self.location.tolist()}, Neighbors={self.neighbors})"
 
 
 class Edge:
@@ -41,9 +44,10 @@ class SATSolution:
 
 
 class Variable:
-    def __init__(self, var_id, negate):
-        self.var_id = var_id
+    def __init__(self, name, negate, id):
+        self.name = name
         self.negate = negate
+        self.id = id
 
 
 class Clause:
@@ -60,7 +64,7 @@ class Clause:
     def evaluate(self, solution: SATSolution):
         result = False
         for v in self.variables:
-            assign = solution.solution[v.var_id]
+            assign = solution.solution[v.name]
             if v.negate:
                 result = result or not assign
             else:
