@@ -23,6 +23,26 @@ def evaluate_formula(formula, sat_assignment):
 
     return True  # All clauses satisfied
 
+def print_formula(formula):
+    """
+    Prints the CNF formula in a human-readable logical notation.
+    
+    :param formula: List of clauses, where each clause is a list of literals (var_id, polarity).
+                    Example: [[(1, False), (2, True)], [(3, False)]]
+    """
+    formula_str = []
+    
+    for clause in formula:
+        clause_str = []
+        for var, polarity in clause:
+            literal = f"¬x{var}" if not polarity else f"x{var}"
+            clause_str.append(literal)
+        
+        formula_str.append(f"({' ∨ '.join(clause_str)})")  # Join literals with "OR"
+    
+    print(" ∧ ".join(formula_str))  # Join clauses with "AND"
+
+
 if __name__ == "__main__":
     formula = [
         [(1, False), (2, True), (3, True)],   # Clause 1: ( ¬x1 ∨ x2 ∨ x3 )
@@ -30,6 +50,8 @@ if __name__ == "__main__":
         [(1, False), (2, True), (4, True)]    # Clause 3: ( x1 ∨ ¬x2 ∨ x4 )
     ]
 
+    print_formula(formula)
+    
     reduction = ThreeSatToIndependentSetReduction(formula)
 
     # Extract necessary mappings

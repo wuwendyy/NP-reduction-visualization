@@ -12,6 +12,13 @@ class ThreeSatToIndependentSetReduction:
         self.formula = formula
         self.graph, self.clause_vertices, self.literal_to_formula_indices, self.literal_id_to_node_id = self.build_3sat_graph_from_formula()
 
+    # which part correspond?  # add mapping (hidden behind the scene)
+    # user don't know what the data is behind
+    # user pass object  (one line ?)
+    # characters of nodes  to select as independent set ()
+    # which variable are true/false 
+    # elements inherit from networkx class
+    
     def build_3sat_graph_from_formula(self):
         """
         Constructs a 3-SAT graph for visualization.
@@ -34,7 +41,7 @@ class ThreeSatToIndependentSetReduction:
                 G.add_node(node_id, literal=literal, clause_index=c_idx)
                 c_nodes.append(node_id)
                 
-                # Store mappings
+                # Store mappings  (user)
                 literal_id_to_node_id[(literal, c_idx)] = node_id
                 if literal not in literal_to_formula_indices:
                     literal_to_formula_indices[literal] = []
