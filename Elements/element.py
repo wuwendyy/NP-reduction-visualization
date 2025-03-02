@@ -1,9 +1,8 @@
-import numpy as np
 import math
 import pygame
 
 from abc import abstractmethod
-from .helpers import *
+from helpers import *
 
 
 class Element:
@@ -41,18 +40,18 @@ class Graph(Element):
         self.node_radius = node_radius
 
     # placeholder print display
-    # def print_display(self):
-    #     print("Nodes:")
-    #     for node in self.nodes:
-    #         print(node.node_id)
-    #     print("Edges:")
-    #     for edge in self.edges:
-    #         print(f"({edge.node1.node_id}, {edge.node2.node_id})")
-    #     print("Groups:")
-    #     for group in self.groups:
-    #         for node in group:
-    #             print(f"{node.node_id}, ", end="")
-    #         print()
+    def print_display(self):
+        print("Nodes:")
+        for node in self.nodes:
+            print(f"{node.node_id}, ", end="")
+        print("\nEdges:")
+        for edge in self.edges:
+            print(f"({edge.node1.node_id}, {edge.node2.node_id}), ", end="")
+        print("\nGroups:")
+        for group in self.groups:
+            for node in group:
+                print(f"{node.node_id}, ", end="")
+            print()
 
     '''
     Read in nodes, edges, and groups from a file
