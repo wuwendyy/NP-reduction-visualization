@@ -3,8 +3,8 @@ import pygame
 import numpy as np
 
 from abc import abstractmethod
-from Elements.helpers import *
-from Elements.graph_drawing_utils import (
+from npvis.elements.helpers import Node, Edge, Clause, Variable
+from npvis.elements.graph_drawing_utils import (
     has_overlapping_edge, 
     draw_bezier_curve,
     draw_thick_bezier_curve, 

@@ -1,10 +1,4 @@
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-from Elements.element import * 
-from Elements.helpers import * 
-
+from npvis.elements.element import Formula, Graph, Node, Edge
 
 class ThreeSatToIndependentSetReduction:
     def __init__(self, formula: Formula):

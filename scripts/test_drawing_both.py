@@ -1,6 +1,6 @@
 import pygame
 import numpy as np
-from elements import Graph, Formula, Edge, Node
+from npvis.elements import Graph, Formula, Edge, Node
 
 # Initialize Pygame
 pygame.init()
