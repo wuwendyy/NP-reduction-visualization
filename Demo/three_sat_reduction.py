@@ -31,15 +31,75 @@ class ThreeSatToIndependentSetReduction:
         elif len(nodes) == 2:
             G.add_edge(Edge(nodes[0], nodes[1]))
         
+    # def build_3sat_graph_from_formula(self):
+    #     """
+    #     Constructs a 3-SAT graph using custom Graph, Node, and Edge classes.
+
+    #     Returns:
+    #         G: Custom Graph object.
+    #         clause_vertices: List of lists mapping clause indices to their corresponding node IDs.
+    #         literal_to_formula_indices: A mapping of literals to positions in the formula.
+    #         lit_to_node_id: Mapping from (literal, clause_idx) → node_id for faster lookups.
+    #     """
+    #     G = Graph()
+    #     clause_vertices = []
+    #     lit_to_node_id = {}
+    #     literal_to_formula_indices = {}
+    #     literal_id_to_node_id = {}
+    #     node_id = 1  # Node index counter
+
+    #     formula_list = self.formula.get_as_list() 
+        
+    #     for c_idx, clause in enumerate(formula_list):
+    #         c_nodes = []
+
+    #         for lit_idx, literal in enumerate(clause):
+    #             print (literal)
+    #             print(lit_idx)
+    #             node = Node(node_id, str(literal))  # Create a new Node
+    #             G.add_node(node)
+    #             c_nodes.append(node)
+
+    #             # Store mappings
+    #             lit_to_node_id[(literal, c_idx)] = node  # Maps (literal, clause index) to Node object
+    #             literal_to_formula_indices.setdefault(literal, []).append((c_idx, lit_idx))
+    #             print(f"Literal ID: {literal.id} → Node ID: {node_id}")
+    #             literal_id_to_node_id[literal.id] = node_id  # Store only literal_id -> node_id mapping
+
+    #             node_id += 1  # Increment node ID
+
+    #         # Add edges within the clause
+    #         self.add_edges_for_clause(G, c_nodes)
+
+    #         clause_vertices.append(c_nodes)
+
+    #     # Add edges between complementary literals (x and ¬x) across clauses
+    #     num_clauses = len(formula_list)
+
+    #     for c_idx in range(num_clauses - 1):  # Check neighboring clauses
+    #         current_clause = formula_list[c_idx]
+    #         next_clause = formula_list[c_idx + 1]
+
+    #         for literal in current_clause:
+    #             opposite_literal = (literal.name, not literal.is_not_negated)  # Flip negation
+    #             if opposite_literal in next_clause:
+    #                 node1 = lit_to_node_id.get((literal, c_idx))
+    #                 node2 = lit_to_node_id.get((opposite_literal, c_idx + 1))
+    #                 if node1 and node2:
+    #                     G.add_edge(Edge(node1, node2))
+
+    #     return G, clause_vertices, literal_to_formula_indices, lit_to_node_id, literal_id_to_node_id
+    
     def build_3sat_graph_from_formula(self):
         """
-        Constructs a 3-SAT graph using custom Graph, Node, and Edge classes.
+        Constructs a 3-SAT graph using the custom Graph, Node, and Edge classes.
 
         Returns:
             G: Custom Graph object.
-            clause_vertices: List of lists mapping clause indices to their corresponding node IDs.
+            clause_vertices: List of lists mapping clause indices to their corresponding node objects.
             literal_to_formula_indices: A mapping of literals to positions in the formula.
-            lit_to_node_id: Mapping from (literal, clause_idx) → node_id for faster lookups.
+            lit_to_node_id: Mapping from (literal, clause_idx) → node object for fast lookups.
+            literal_id_to_node_id: Mapping from literal_id → node_id for efficient retrieval.
         """
         G = Graph()
         clause_vertices = []
@@ -48,41 +108,42 @@ class ThreeSatToIndependentSetReduction:
         literal_id_to_node_id = {}
         node_id = 1  # Node index counter
 
-        formula_list = self.formula.get_as_list() 
-        
+        formula_list = self.formula.get_as_list()
+
+        # Step 1: Create Nodes and Groups
         for c_idx, clause in enumerate(formula_list):
             c_nodes = []
 
             for lit_idx, literal in enumerate(clause):
-                print (literal)
-                print(lit_idx)
-                node = Node(node_id, str(literal))  # Create a new Node
+                node = Node(node_id, str(literal))  # Create Node with unique ID and name
                 G.add_node(node)
                 c_nodes.append(node)
 
                 # Store mappings
-                lit_to_node_id[(literal, c_idx)] = node  # Maps (literal, clause index) to Node object
+                lit_to_node_id[(literal, c_idx)] = node
                 literal_to_formula_indices.setdefault(literal, []).append((c_idx, lit_idx))
-                print(f"Literal ID: {literal.id} → Node ID: {node_id}")
-                literal_id_to_node_id[literal.id] = node_id  # Store only literal_id -> node_id mapping
+                literal_id_to_node_id[literal.id] = node_id
 
-                node_id += 1  # Increment node ID
+                print(f"Literal ID: {literal.id} → Node ID: {node_id}")  # Debug output
+                node_id += 1
 
-            # Add edges within the clause
-            self.add_edges_for_clause(G, c_nodes)
-
+            # Store clause as a group of three nodes
             clause_vertices.append(c_nodes)
+            G.groups.append(c_nodes)
 
-        # Add edges between complementary literals (x and ¬x) across clauses
-        num_clauses = len(formula_list)
+            # Step 2: Add edges between nodes within the clause (fully connected)
+            for i in range(len(c_nodes)):
+                for j in range(i + 1, len(c_nodes)):
+                    G.add_edge(Edge(c_nodes[i], c_nodes[j]))
 
-        for c_idx in range(num_clauses - 1):  # Check neighboring clauses
-            current_clause = formula_list[c_idx]
-            next_clause = formula_list[c_idx + 1]
-
-            for literal in current_clause:
-                opposite_literal = (literal.name, not literal.is_not_negated)  # Flip negation
-                if opposite_literal in next_clause:
+        # Step 3: Add edges between complementary literals (x and ¬x) across clauses
+        for c_idx in range(len(formula_list) - 1):
+            for literal in formula_list[c_idx]:
+                opposite_literal = next(
+                    (lit for lit in formula_list[c_idx + 1] if lit.name == literal.name and lit.is_not_negated != literal.is_not_negated),
+                    None
+                )
+                if opposite_literal:
                     node1 = lit_to_node_id.get((literal, c_idx))
                     node2 = lit_to_node_id.get((opposite_literal, c_idx + 1))
                     if node1 and node2:

@@ -1,9 +1,14 @@
 import math
 import pygame
+import numpy as np
 
 from abc import abstractmethod
-from helpers import *
-
+from Elements.helpers import *
+from Elements.graph_drawing_utils import (
+    has_overlapping_edge, 
+    draw_thick_bezier_curve, 
+    find_best_control_point
+)
 
 class Element:
     # display to pygame
@@ -36,8 +41,11 @@ class Graph(Element):
         self.groups = groups
         self.bounding_box = bounding_box
         self.node_dict = None
-        self.create_node_dictionary()
+        self._create_node_dictionary()
         self.node_radius = node_radius
+        
+    def set_bounding_box(self, bounding_box):
+        self.bounding_box = bounding_box
 
     # placeholder print display
     def print_display(self):
@@ -114,12 +122,17 @@ class Graph(Element):
             # has group assignment 
             self.determine_node_positions_by_groups()
         return
+    
+    def _create_node_dictionary(self):
+        '''
+        Create dictionary for node loop up
+        '''
+        self.node_dict = {node.node_id: node for node in self.nodes}
 
-    '''
-    Helper function for 2d vector rotations  
-    '''
-
-    def rotate_vector_np(self, vector, angle_degrees):
+    def _rotate_vector_np(self, vector, angle_degrees):
+        '''
+        Helper function for 2d vector rotations  
+        '''
         angle_radians = np.radians(angle_degrees)
         rotation_matrix = np.array([
             [np.cos(angle_radians), -np.sin(angle_radians)],
@@ -127,19 +140,11 @@ class Graph(Element):
         ])
         return rotation_matrix @ vector
 
-    '''
-    Helper function to get node by id 
-    '''
-
     def get_node_by_id(self, id):
+        '''
+        Helper function to get node by id 
+        '''
         return self.node_dict.get(id)
-
-    '''
-    Create dictionary for node loop up
-    '''
-
-    def create_node_dictionary(self):
-        self.node_dict = {node.node_id: node for node in self.nodes}
 
     def determine_node_positions_by_groups(self, group_size=200, gap=40):
         # assign group areas
@@ -161,7 +166,7 @@ class Graph(Element):
                 [(0.5 + c) * width_per_groups, (0.5 + r) * width_per_groups])
             angle = 360. / len(group)
             for i in range(len(group)):
-                displacement = self.rotate_vector_np(start_vector, i * angle)
+                displacement = self._rotate_vector_np(start_vector, i * angle)
                 node_new_pos = center + displacement
                 group[i].location = node_new_pos
 
@@ -171,108 +176,90 @@ class Graph(Element):
                 c = 0
 
     def display(self, screen):
-        # Draw edges
         for edge in self.edges:
             start_pos = edge.node1.location
             end_pos = edge.node2.location
-            pygame.draw.line(screen, edge.color, start_pos, end_pos, 3)
+
+            if has_overlapping_edge(edge, self.nodes, self.node_radius):
+                control_point = find_best_control_point(start_pos, end_pos, self.nodes, self.node_radius)
+                draw_thick_bezier_curve(screen, start_pos, control_point, end_pos, edge.color, width=3)
+            else:
+                pygame.draw.line(screen, edge.color, start_pos.astype(int), end_pos.astype(int), 3)
 
         # Draw nodes
         for node in self.nodes:
             pygame.draw.circle(screen, node.color, node.location.astype(int), self.node_radius)
-            # Optionally draw node name in the center
             font = pygame.font.SysFont(None, 24)
             text_surface = font.render(node.name, True, (255, 255, 255))
             text_rect = text_surface.get_rect(center=(int(node.location[0]), int(node.location[1])))
             screen.blit(text_surface, text_rect)
-
 
 class Formula:
     def __init__(self, bounding_box=np.array([[50, 50], [550, 550]])):
         self.clauses = []
         self.bounding_box = bounding_box
         self.font = None
-        self.literal_dict = {}  # Dictionary to map literal_id to (name, negate, clause_id)
+        self.literal_dict = {}
+        
+    def set_bounding_box(self, bounding_box):
+        self.bounding_box = bounding_box
 
-    """
-    Return a list of list of tuples
-    formula.clauses = [ #(var, is_negated, clause_idx)
-        [('X1', False, 1, 1), ('X2', True, 1, 2), ('X3', False, 1, 3)],
-        [('X2', False, 2, 4), ('X3', True, 2, 5), ('X4', False, 2, 6)],
-        [('X1', False, 3, 7), ('X2', True, 3, 8), ('X4', False, 3, 9)]
-    ]
-    """
-    
     def parse(self, filename):
-        self.clauses = []  # Ensure fresh parsing each time
+        """
+        Parses a formula from a file in the format:
+        (NOT x1 OR x2 OR x3) AND (x2 OR NOT x3 OR x4) AND (x1 OR NOT x2 OR x4)
+        """
+        self.clauses = []
         counter = 0
+        variable_counter = 1  # Unique variable ID
+
         with open(filename, "r") as f:
-            x = f.read().split("AND")
-            for c in x:
+            formula_text = f.read().strip()
+            clause_texts = formula_text.split("AND")
+
+            for clause_str in clause_texts:
                 counter += 1
-                c = c.strip()[1:-1]  # remove the parentheses
+                clause_str = clause_str.strip()[1:-1]  # Remove parentheses
                 clause = Clause(counter)
-                v = c.split()
+
+                tokens = clause_str.split()
                 i = 0
-                while i < len(v):
-                    negate = False
-                    if v[i] == "NOT":
-                        negate = True
-                        i += 1
-                    var = Variable(v[i], negate)
-                    clause.add_variable(var)
-                    i += 2  # skip the AND part
+                while i < len(tokens):
+                    is_not_negated = True
+                    if tokens[i] == "NOT":
+                        is_not_negated = False
+                        i += 1  # Move to variable name
+
+                    var_name = tokens[i]
+                    variable = Variable(var_name, is_not_negated, counter, variable_counter)
+                    variable_counter += 1
+                    clause.add_variable(variable)
+
+                    i += 2  # Skip OR
+
                 self.clauses.append(clause)
-    
+
     def get_as_list(self):
-        """
-        Convert clauses into a list of lists of Variable objects.
-        Also builds a dictionary mapping literal_id to Variable instances.
+        return [[v for v in clause.variables] for clause in self.clauses]
 
-        Returns:
-            List[List[Variable]]: A list of clauses, where each clause is a list of Variable objects.
-        """
-        outer_list = []
-        self.literal_dict = {}  # Reset the dictionary before populating
-
-        for clause in self.clauses:
-            inner_list = []
-            for var in clause.variables:
-                inner_list.append(var)
-                self.literal_dict[var.id] = var  # Map var.id → var object
-            outer_list.append(inner_list)
-
-        return outer_list
-
-
-    def get_literal_by_id(self, literal_id):
-        """
-        Retrieve a literal based on its ID.
-
-        Args:
-            literal_id: The ID of the literal to retrieve.
-
-        Returns:
-            A tuple (name, is_negated, clause_id) if found, else None.
-        """
-        return self.literal_dict.get(literal_id)
-
-    def evaluate(self, solution: SATSolution):
-        return all(c.evaluate(solution) for c in self.clauses)
+    def evaluate(self, solution):
+        return all(clause.evaluate(solution) for clause in self.clauses)
 
     def display(self, screen):
         if self.font is None:
-            self.font = pygame.font.SysFont(None, 24)
+            self.font = pygame.font.Font(None, 24)
 
         x, y = self.bounding_box[0]
         max_width = self.bounding_box[1][0] - x
         max_height = self.bounding_box[1][1] - y
-        line_height = 30  # Height of each line of text
-        current_x, current_y = x, y
+        line_height = 30  # Height per line
+        current_y = y
 
-        clauses = self.get_as_list()
-        formatted_clauses = ["(" + " OR ".join([f"{'¬' if neg else ''}{var}" for var, neg, _ in clause]) + ")" for
-                             clause in clauses]
+        # Convert clauses into formatted strings
+        formatted_clauses = []
+        for clause in self.clauses:
+            clause_str = "(" + " OR ".join(str(var) for var in clause.variables) + ")"
+            formatted_clauses.append(clause_str)
 
         text_lines = []
         current_line = ""
@@ -281,27 +268,22 @@ class Formula:
             temp_surface = self.font.render(current_line + (" AND " if current_line else "") + clause, True, (0, 0, 0))
             temp_width = temp_surface.get_width()
 
-            # If adding this clause exceeds the bounding box width
             if temp_width > max_width:
-                if not current_line:  # If the clause alone is too wide, raise an error
-                    raise ValueError(f"Clause '{clause}' is too wide to fit within the bounding box.")
+                if not current_line:
+                    raise ValueError(f"Clause '{clause}' is too wide to fit in bounding box.")
 
-                text_lines.append(current_line)  # Store the current line
-                current_line = clause  # Start a new line with the clause
+                text_lines.append(current_line)
+                current_line = clause
             else:
-                if current_line:
-                    current_line += " AND " + clause
-                else:
-                    current_line = clause
+                current_line += (" AND " if current_line else "") + clause
 
-        if current_line:  # Append the last line if any remaining text
+        if current_line:
             text_lines.append(current_line)
 
-        # Check if text fits within bounding box height
         if len(text_lines) * line_height > max_height:
             raise ValueError("Not enough space to display all clauses within the bounding box.")
 
-        # Render and blit each line
         for i, line in enumerate(text_lines):
             text_surface = self.font.render(line, True, (0, 0, 0))
-            screen.blit(text_surface, (x, y + i * line_height))
+            screen.blit(text_surface, (x, current_y + i * line_height))
+    

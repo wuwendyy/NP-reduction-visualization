@@ -152,3 +152,35 @@ if __name__ == "__main__":
     formula_result = evaluate_formula(formula, sat_assignment)
     
     print("\nDoes the formula evaluate to True?", formula_result)
+    
+    ### Hao: those are added for the visualization 
+    # Define bounding boxes for both elements
+    graph_bounding_box = np.array([[400, 50], [780, 550]])  # Right side of the window
+    formula_bounding_box = np.array([[20, 50], [380, 200]])  # Left upper side
+    graph.set_bounding_box(graph_bounding_box)
+    graph.determine_node_positions()
+    formula.set_bounding_box(formula_bounding_box)
+    
+    # Initialize Pygame
+    pygame.init()
+    screen = pygame.display.set_mode((800, 600))
+    pygame.display.set_caption("Graph and Formula Display")
+    clock = pygame.time.Clock()
+    
+    # Main loop
+    running = True
+    while running:
+        screen.fill((255, 255, 255))  # Clear screen
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+        # Display both elements
+        graph.display(screen)
+        formula.display(screen)
+
+        pygame.display.flip()
+        clock.tick(30)  # Limit FPS to 30
+
+    pygame.quit()

@@ -44,28 +44,20 @@ class SATSolution:
 
 
 class Variable:
-    def __init__(self, name, is_not_negated, cid, id):
+    def __init__(self, name, is_not_negated, clause_id, var_id):
         self.name = name
         self.is_not_negated = is_not_negated
-        self.clause_id = cid
-        self.id = id
-        
+        self.clause_id = clause_id
+        self.id = var_id
+
     def __str__(self):
-        """
-        Custom string representation for printing.
-        """
-        sign = "" if self.is_not_negated else "¬"  # Use "¬" for negated literals
-        return f"Variable({sign}x{self.name}, Clause {self.clause_id}, ID {self.id})"
+        sign = "" if self.is_not_negated else "¬"
+        return f"{sign}x{self.name}"
 
     def __repr__(self):
-        """
-        Custom representation for debugging and lists.
-        """
         return self.__str__()
-        
-class Clause:
-    variables = []
 
+class Clause:
     def __init__(self, clause_id: int):
         self.variables = []
         self.clause_id = clause_id
@@ -73,14 +65,5 @@ class Clause:
     def add_variable(self, variable: Variable):
         self.variables.append(variable)
 
-    # given a solution, evaluate if the clause is true
-    def evaluate(self, solution: SATSolution):
-        result = False
-        for v in self.variables:
-            assign = solution.solution[v.name]
-            if v.negate:
-                result = result or not assign
-            else:
-                result = result or assign
-
-        return result
+    def evaluate(self, solution):
+        return any(solution.get(v.name, False) == v.is_not_negated for v in self.variables)
