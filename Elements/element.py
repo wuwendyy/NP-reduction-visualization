@@ -6,6 +6,7 @@ from abc import abstractmethod
 from Elements.helpers import *
 from Elements.graph_drawing_utils import (
     has_overlapping_edge, 
+    draw_bezier_curve,
     draw_thick_bezier_curve, 
     find_best_control_point
 )
@@ -182,7 +183,7 @@ class Graph(Element):
 
             if has_overlapping_edge(edge, self.nodes, self.node_radius):
                 control_point = find_best_control_point(start_pos, end_pos, self.nodes, self.node_radius)
-                draw_thick_bezier_curve(screen, start_pos, control_point, end_pos, edge.color, width=3)
+                draw_thick_bezier_curve(screen, start_pos, control_point, end_pos, edge.color, width=1)
             else:
                 pygame.draw.line(screen, edge.color, start_pos.astype(int), end_pos.astype(int), 3)
 

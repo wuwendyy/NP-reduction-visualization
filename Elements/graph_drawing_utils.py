@@ -1,7 +1,29 @@
 import pygame
 import numpy as np
 
-def draw_thick_bezier_curve(screen, start, control, end, color, width=3):
+def draw_bezier_curve(screen, start, control, end, color):
+    """
+    Draws a smooth quadratic Bézier curve from start → control → end using pygame's standard line thickness.
+
+    Args:
+        screen: Pygame surface.
+        start: Start position (numpy array).
+        control: Control point for the Bézier curve.
+        end: End position.
+        color: RGB color tuple.
+    """
+    num_segments = 30  # Controls smoothness of the curve
+    points = []
+
+    for t in np.linspace(0, 1, num_segments):
+        # Quadratic Bézier interpolation
+        point = (1 - t) ** 2 * start + 2 * (1 - t) * t * control + t ** 2 * end
+        points.append(point.astype(int))
+
+    # Use Pygame's default line thickness (same as pygame.draw.line)
+    pygame.draw.aalines(screen, color, False, points)
+
+def draw_thick_bezier_curve(screen, start, control, end, color, width=2):
     """
     Draws a thick quadratic Bézier curve from start → control → end.
 
