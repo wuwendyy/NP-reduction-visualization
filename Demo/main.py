@@ -1,7 +1,7 @@
 import pygame
 import numpy as np
 
-from npvis.elements.element import Formula, Clause, Variable
+from npvis.element.element import Formula, Clause, Variable
 from three_sat_reduction import ThreeSatToIndependentSetReduction
 
 def evaluate_formula(formula, sat_assignment):

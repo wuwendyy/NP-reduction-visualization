@@ -1,7 +1,7 @@
 import pygame
 import numpy as np
 import math
-from npvis.elements import *
+from npvis.element import *
 
 # Function to detect if a point is inside a circle
 def is_inside_circle(point, circle_center, radius):

@@ -1,4 +1,4 @@
-from npvis.elements.element import Formula, Graph, Node, Edge
+from npvis.element.element import Formula, Graph, Node, Edge
 
 class ThreeSatToIndependentSetReduction:
     def __init__(self, formula: Formula):

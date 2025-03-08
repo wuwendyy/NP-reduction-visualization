@@ -1,7 +1,7 @@
 import pygame
 import numpy as np
 import math
-from npvis.elements import Formula
+from npvis.element import Formula
 
 # Test code for formular display
 if __name__ == "__main__":

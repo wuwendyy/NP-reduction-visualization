@@ -2,7 +2,7 @@ import pygame
 import numpy as np
 import math
 
-from npvis.elements import Node, Edge, Graph
+from npvis.element import Node, Edge, Graph
 
 # Test code for graph display
 if __name__ == "__main__":

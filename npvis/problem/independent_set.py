@@ -1,0 +1,72 @@
+from npvis.element.element import Graph, Node, Edge
+import numpy as np
+
+class IndependentSetProblem:
+    """
+    Manages the graph structure for an Independent Set problem.
+    No visualization is handled here.
+    """
+
+    def __init__(self):
+        self.graph = Graph()
+        self.next_node_id = 1
+
+    def add_node(self, name=None):
+        """
+        Adds a node to the graph and returns it.
+
+        Args:
+            name (str): Optional name/label for the node.
+
+        Returns:
+            Node: The newly created node.
+        """
+        node_name = name if name else str(self.next_node_id)
+        node = Node(self.next_node_id, node_name)
+        self.graph.add_node(node)
+        self.next_node_id += 1
+        return node
+
+    def add_edge(self, node1, node2):
+        """
+        Adds an edge between two nodes in the graph.
+        """
+        edge = Edge(node1, node2)
+        self.graph.add_edge(edge)
+
+    def is_independent_set(self, node_ids):
+        """
+        Checks if node_ids form an independent set in this graph.
+
+        Args:
+            node_ids (iterable): Collection of node IDs.
+
+        Returns:
+            bool: True if no two nodes in the set have an edge, else False.
+        """
+        node_ids = set(node_ids)
+        for node1_id in node_ids:
+            for node2_id in node_ids:
+                if node1_id != node2_id and self.graph.hasEdge(
+                    self.graph.get_node_by_id(node1_id), self.graph.get_node_by_id(node2_id)
+                ):
+                    return False
+        return True
+
+    def get_graph(self):
+        """
+        Returns the underlying Graph object.
+        """
+        return self.graph
+
+if __name__ == "__main__":
+    ind_set_problem = IndependentSetProblem()
+    n1 = ind_set_problem.add_node("A")
+    n2 = ind_set_problem.add_node("B")
+    n3 = ind_set_problem.add_node("C")
+
+    ind_set_problem.add_edge(n1, n2)
+    ind_set_problem.add_edge(n2, n3)
+
+    test_set = {n1.node_id, n3.node_id}
+    print("Is it independent?", ind_set_problem.is_independent_set(test_set))  # Expect True
