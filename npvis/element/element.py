@@ -141,11 +141,11 @@ class Graph(Element):
         ])
         return rotation_matrix @ vector
 
-    def get_node_by_id(self, id):
-        '''
-        Helper function to get node by id 
-        '''
-        return self.node_dict.get(id)
+    # def get_node_by_id(self, id):
+    #     '''
+    #     Helper function to get node by id 
+    #     '''
+    #     return self.node_dict.get(id)
 
     def determine_node_positions_by_groups(self, group_size=200, gap=40):
         # assign group areas

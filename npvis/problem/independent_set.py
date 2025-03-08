@@ -20,6 +20,9 @@ class IndependentSetProblem:
         Returns:
             Node: The newly created node.
         """
+        assert name == None or isinstance(name, str), "Name must be a string."
+        assert len(name) <= 10, "Name must be at most 10 characters long."
+        
         node_name = name if name else str(self.next_node_id)
         node = Node(self.next_node_id, node_name)
         self.graph.add_node(node)
@@ -30,6 +33,12 @@ class IndependentSetProblem:
         """
         Adds an edge between two nodes in the graph.
         """
+        assert node1 != None, "Node 1 is None."
+        assert node2 != None, "Node 2 is None."
+        assert node1 != node2, "Cannot add an edge between the same node."
+        assert node1 in self.graph.nodes, "Node 1 is not in the graph."
+        assert node2 in self.graph.nodes, "Node 2 is not in the graph."
+        
         edge = Edge(node1, node2)
         self.graph.add_edge(edge)
         
@@ -37,6 +46,11 @@ class IndependentSetProblem:
         """
         Adds a group of nodes to the graph.
         """
+        assert len(nodes) > 0, "Group must contain at least one node."
+        assert len(set(nodes)) == len(nodes), "Group contains duplicate nodes."
+        for node in nodes:
+            assert node in self.graph.nodes, "Node is not in the graph."
+        
         self.graph.groups.append(nodes)
 
     def is_independent_set(self, node_ids) -> bool:
