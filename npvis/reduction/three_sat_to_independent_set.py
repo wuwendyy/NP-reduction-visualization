@@ -1,3 +1,6 @@
+from npvis.problem.three_sat import ThreeSATProblem
+from npvis.problem.independent_set import IndependentSetProblem
+
 class ThreeSatToIndependentSetReduction:
     """
     A single reduction class that uses ThreeSATProblem and IndependentSetProblem.
@@ -11,8 +14,8 @@ class ThreeSatToIndependentSetReduction:
         """
         Initializes the reduction with references to the problem instances.
         """
-        self.three_sat_problem = three_sat_problem
-        self.ind_set_problem = ind_set_problem
+        self.three_sat_problem: ThreeSATProblem = three_sat_problem
+        self.ind_set_problem: IndependentSetProblem = ind_set_problem
         
         self.lit_node_map = {}
         self.node_lit_map = {}
@@ -22,19 +25,22 @@ class ThreeSatToIndependentSetReduction:
         Minimal code to transform the 3-SAT formula into the graph structure 
         for an Independent Set problem.
         """
-        # Example: For each literal, create a node
         formula_list = self.three_sat_problem.get_as_list()
         for clause in formula_list:
-            # Possibly group the nodes belonging to a single clause
             nodes_in_clause = []
             for (var_id, is_not_negated) in clause:
+                # Create a nicer name:
+                node_name = f"x{var_id}" if is_not_negated else f"¬x{var_id}"
+                node = self.ind_set_problem.add_node(name=node_name)
+
                 literal_id = (var_id, is_not_negated)
-                node = self.ind_set_problem.add_node(name=str(literal_id))
                 self.lit_node_map[literal_id] = node.node_id
                 self.node_lit_map[node.node_id] = literal_id
                 nodes_in_clause.append(node)
             
-            # Example: Fully connect nodes in each clause (triangle, etc.)
+            self.ind_set_problem.add_group(nodes_in_clause)
+            
+            # Fully connect nodes in each clause
             for i in range(len(nodes_in_clause)):
                 for j in range(i + 1, len(nodes_in_clause)):
                     self.ind_set_problem.add_edge(nodes_in_clause[i], nodes_in_clause[j])

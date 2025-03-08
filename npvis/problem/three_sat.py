@@ -9,7 +9,7 @@ class ThreeSATProblem:
     def __init__(self):
         self.formula = Formula()
 
-    def add_clause(self, literals):
+    def add_clause(self, literals) -> None:
         """
         Adds a clause to the formula.
 
@@ -26,7 +26,7 @@ class ThreeSATProblem:
 
         self.formula.clauses.append(clause_obj)
 
-    def load_formula(self, clause_list):
+    def load_formula(self, clause_list) -> None:
         """
         Bulk-loads a set of clauses into the formula.
 
@@ -37,7 +37,7 @@ class ThreeSATProblem:
         for clause in clause_list:
             self.add_clause(clause)
 
-    def evaluate(self, assignment):
+    def evaluate(self, assignment) -> bool:
         """
         Evaluates this 3-SAT formula given a variable assignment.
 
@@ -49,7 +49,7 @@ class ThreeSATProblem:
         """
         return all(self._evaluate_clause(clause, assignment) for clause in self.formula.clauses)
 
-    def _evaluate_clause(self, clause_obj, assignment):
+    def _evaluate_clause(self, clause_obj, assignment) -> bool:
         """
         Evaluates a single clause under a given assignment.
         """
@@ -61,7 +61,7 @@ class ThreeSATProblem:
                 break
         return result
 
-    def get_variables(self):
+    def get_variables(self) -> set[str]:
         """
         Returns a set of all variable IDs in the formula.
         """
@@ -71,7 +71,7 @@ class ThreeSATProblem:
                 all_vars.add(var.name)
         return all_vars
 
-    def get_as_list(self):
+    def get_as_list(self) -> list[list[tuple[str, bool]]]:
         """
         Returns the formula as a list of lists of (var_id, is_not_negated).
         Helps in interfacing with other modules or for debugging.
@@ -83,6 +83,12 @@ class ThreeSATProblem:
                 clause_list.append((var.name, var.is_not_negated))
             output.append(clause_list)
         return output
+    
+    def get_formula(self) -> Formula:
+        """
+        Returns the underlying Formula object.
+        """
+        return self.formula
 
 if __name__ == "__main__":
     # Example usage

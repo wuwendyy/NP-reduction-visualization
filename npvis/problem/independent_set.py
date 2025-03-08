@@ -1,5 +1,4 @@
 from npvis.element.element import Graph, Node, Edge
-import numpy as np
 
 class IndependentSetProblem:
     """
@@ -11,7 +10,7 @@ class IndependentSetProblem:
         self.graph = Graph()
         self.next_node_id = 1
 
-    def add_node(self, name=None):
+    def add_node(self, name=None) -> Node:
         """
         Adds a node to the graph and returns it.
 
@@ -27,14 +26,20 @@ class IndependentSetProblem:
         self.next_node_id += 1
         return node
 
-    def add_edge(self, node1, node2):
+    def add_edge(self, node1, node2) -> None:
         """
         Adds an edge between two nodes in the graph.
         """
         edge = Edge(node1, node2)
         self.graph.add_edge(edge)
+        
+    def add_group(self, nodes) -> None:
+        """
+        Adds a group of nodes to the graph.
+        """
+        self.graph.groups.append(nodes)
 
-    def is_independent_set(self, node_ids):
+    def is_independent_set(self, node_ids) -> bool:
         """
         Checks if node_ids form an independent set in this graph.
 
@@ -53,7 +58,7 @@ class IndependentSetProblem:
                     return False
         return True
 
-    def get_graph(self):
+    def get_graph(self) -> Graph:
         """
         Returns the underlying Graph object.
         """
