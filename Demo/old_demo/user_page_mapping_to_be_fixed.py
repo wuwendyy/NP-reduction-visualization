@@ -1,5 +1,5 @@
 import sys
-from elements import Graph, Formula
+from npvis.elements.element import Graph, Formula
 from three_sat_reduction import ThreeSatToIndependentSetReduction
 from three_sat_visualizer import ThreeSatGraphVisualizer
 

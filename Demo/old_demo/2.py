@@ -1,11 +1,9 @@
 import networkx as nx
 import itertools
-from elements import Formula
-from helpers import Node, Edge
-from elements import Graph, Formula
-from helpers import Node, Edge
 from three_sat_reduction import ThreeSatToIndependentSetReduction
 from three_sat_visualizer import ThreeSatGraphVisualizer
+from npvis.elements.element import Graph, Formula
+from npvis.elements.helpers import Node, Edge
 
 class ThreeSatToIndependentSetReduction:
     def __init__(self, formula):
