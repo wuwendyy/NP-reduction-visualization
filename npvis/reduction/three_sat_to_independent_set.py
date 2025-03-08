@@ -46,11 +46,25 @@ class ThreeSatToIndependentSetReduction:
                     self.ind_set_problem.add_edge(nodeA, nodeB)
 
     def sol1tosol2(self, sat_assignment):
-        iset = set()
-        for (var_id, is_not_negated, _cidx), node_id in self.lit_node_map.items():
-            if sat_assignment.get(var_id, False) == is_not_negated:
-                iset.add(node_id)
-        return iset
+        independent_set = set()
+        formula_list = self.three_sat_problem.get_as_list()
+
+        for c_idx, clause in enumerate(formula_list):
+            chosen_node = None
+            for (var_id, is_not_negated) in clause:
+                # Key includes c_idx, so we find the node for this literal occurrence
+                key = (var_id, is_not_negated, c_idx)
+                node_id = self.lit_node_map.get(key, None)
+
+                # If the assignment matches the literal, consider picking it
+                if sat_assignment.get(var_id, False) == is_not_negated:
+                    chosen_node = node_id
+                    break  # Once we pick a single literal in this clause, we stop
+
+            if chosen_node is not None:
+                independent_set.add(chosen_node)
+
+        return independent_set
 
     def sol2tosol1(self, iset):
         assignment = {}
