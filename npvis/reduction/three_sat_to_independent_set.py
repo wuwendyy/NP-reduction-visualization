@@ -1,84 +1,67 @@
-from npvis.problem.three_sat import ThreeSATProblem
-from npvis.problem.independent_set import IndependentSetProblem
-
 class ThreeSatToIndependentSetReduction:
     """
-    A single reduction class that uses ThreeSATProblem and IndependentSetProblem.
-    The user only writes logic to:
-      1) Build a graph from the 3-SAT instance,
-      2) Convert SAT solutions to independent sets,
-      3) Convert independent sets back to SAT solutions.
+    Performs a standard 3-SAT → Independent Set reduction.
+
+    - build_graph_from_formula(): Creates one node per (literal-occurrence) in each clause.
+      Fully connects each clause's nodes, then connects complementary literal-nodes across clauses.
+    - sol1tosol2(): Maps a SAT assignment to an Independent Set.
+    - sol2tosol1(): Maps an Independent Set back to a SAT assignment.
     """
 
     def __init__(self, three_sat_problem, ind_set_problem):
-        """
-        Initializes the reduction with references to the problem instances.
-        """
-        self.three_sat_problem: ThreeSATProblem = three_sat_problem
-        self.ind_set_problem: IndependentSetProblem = ind_set_problem
-        
-        self.lit_node_map = {}
-        self.node_lit_map = {}
+        self.three_sat_problem = three_sat_problem
+        self.ind_set_problem = ind_set_problem
+        self.lit_node_map = {}  # (var_id, is_not_negated, clause_idx) -> node_id
+        self.node_lit_map = {}  # node_id -> (var_id, is_not_negated, clause_idx)
 
     def build_graph_from_formula(self):
-        """
-        Minimal code to transform the 3-SAT formula into the graph structure 
-        for an Independent Set problem.
-        """
         formula_list = self.three_sat_problem.get_as_list()
-        for clause in formula_list:
-            nodes_in_clause = []
-            for (var_id, is_not_negated) in clause:
-                # Create a nicer name:
-                node_name = f"x{var_id}" if is_not_negated else f"¬x{var_id}"
-                node = self.ind_set_problem.add_node(name=node_name)
 
-                literal_id = (var_id, is_not_negated)
-                self.lit_node_map[literal_id] = node.node_id
-                self.node_lit_map[node.node_id] = literal_id
-                nodes_in_clause.append(node)
-            
-            self.ind_set_problem.add_group(nodes_in_clause)
-            
-            # Fully connect nodes in each clause
-            for i in range(len(nodes_in_clause)):
-                for j in range(i + 1, len(nodes_in_clause)):
-                    self.ind_set_problem.add_edge(nodes_in_clause[i], nodes_in_clause[j])
+        # Create nodes per clause and fully connect them.
+        for c_idx, clause in enumerate(formula_list):
+            clause_nodes = []
+            for (var_id, is_not_negated) in clause:
+                key = (var_id, is_not_negated, c_idx)
+                name = f"x{var_id}" if is_not_negated else f"¬x{var_id}"
+                node = self.ind_set_problem.add_node(name=name)
+                self.lit_node_map[key] = node.node_id
+                self.node_lit_map[node.node_id] = key
+                clause_nodes.append(node)
+
+            self.ind_set_problem.add_group(clause_nodes)
+            for i in range(len(clause_nodes)):
+                for j in range(i + 1, len(clause_nodes)):
+                    self.ind_set_problem.add_edge(clause_nodes[i], clause_nodes[j])
+
+        # Connect complementary literal occurrences across clauses.
+        graph = self.ind_set_problem.get_graph()
+        items = list(self.lit_node_map.items())
+        for i in range(len(items)):
+            (varA, polA, _cA), nA = items[i]
+            nodeA = graph.get_node_by_id(nA)
+            for j in range(i + 1, len(items)):
+                (varB, polB, _cB), nB = items[j]
+                if varA == varB and polA != polB:
+                    nodeB = graph.get_node_by_id(nB)
+                    self.ind_set_problem.add_edge(nodeA, nodeB)
 
     def sol1tosol2(self, sat_assignment):
-        """
-        Convert SAT assignment (dict: var_id -> bool) into an Independent Set solution (set of node_ids).
-        """
-        independent_set = set()
-        
-        for literal_id, node_id in self.lit_node_map.items():
-            var_id, is_not_negated = literal_id
-            # If assignment matches literal, pick that node
+        iset = set()
+        for (var_id, is_not_negated, _cidx), node_id in self.lit_node_map.items():
             if sat_assignment.get(var_id, False) == is_not_negated:
-                independent_set.add(node_id)
-        return independent_set
+                iset.add(node_id)
+        return iset
 
-    def sol2tosol1(self, independent_set):
-        """
-        Convert an Independent Set solution back into a SAT assignment (dict: var_id -> bool).
-        """
-        sat_assignment = {}
-        # For each node in the set, recover its literal
-        for node_id in independent_set:
-            literal_id = self.node_lit_map.get(node_id)
-            if literal_id:
-                var_id, is_not_negated = literal_id
-                sat_assignment[var_id] = is_not_negated
-        return sat_assignment
+    def sol2tosol1(self, iset):
+        assignment = {}
+        for nid in iset:
+            if nid in self.node_lit_map:
+                var_id, is_not_negated, _cidx = self.node_lit_map[nid]
+                assignment[var_id] = is_not_negated
+        return assignment
 
     def test_solution(self, sat_assignment):
-        """
-        Quickly check if the 3-SAT is satisfied or if the set is independent
-        for debugging or demonstration.
-        """
-        # Check 3-SAT satisfaction
         satisfied = self.three_sat_problem.evaluate(sat_assignment)
-        # Build corresponding IS and check if indeed independent
-        is_sol = self.sol1tosol2(sat_assignment)
-        is_valid = self.ind_set_problem.is_independent_set(is_sol)
-        return satisfied, is_valid
+        chosen = self.sol1tosol2(sat_assignment)
+        valid_independent = self.ind_set_problem.is_independent_set(chosen)
+        return satisfied, valid_independent
