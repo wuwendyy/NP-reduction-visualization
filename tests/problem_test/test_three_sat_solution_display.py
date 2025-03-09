@@ -5,11 +5,10 @@ from npvis.problem import ThreeSATProblem, IndependentSetProblem
 from npvis.reduction import ThreeSatToIndependentSetReduction
 
 def main():
-    # 1) Create problems
+    # Create problems
     three_sat_problem = ThreeSATProblem()
-    ind_set_problem = IndependentSetProblem()
 
-    # 2) Load formula into ThreeSATProblem
+    # Load formula into ThreeSATProblem
     clauses = [
         [(1, False), (2, True), (3, True)],
         [(1, True), (2, False), (3, True)],
@@ -17,34 +16,15 @@ def main():
     ]
     three_sat_problem.load_formula(clauses)
 
-    # 3) Create the reduction
-    reduction = ThreeSatToIndependentSetReduction(three_sat_problem, ind_set_problem)
-
-    # 4) Build graph from 3-SAT
-    reduction.build_graph_from_formula()
-
-    # 5) Example assignment
+    # Example assignment
     sat_assignment = {1: True, 2: True, 3: False, 4: False}
+    print("Is the formula satisfied?", three_sat_problem.evaluate(sat_assignment))
+    three_sat_problem.set_solution(sat_assignment)
+    print(three_sat_problem.solution)
 
-    # 6) Check solution
-    satisfied, is_valid = reduction.test_solution(sat_assignment)
-    print("Is 3-SAT satisfied?", satisfied)
-    print("Is the corresponding set an independent set?", is_valid)
-
-    # Convert solutions
-    is_set = reduction.sol1tosol2(sat_assignment)
-    print("Independent Set from SAT assignment:", is_set)
-
-    recovered_assignment = reduction.sol2tosol1(is_set)
-    print("Recovered SAT assignment:", recovered_assignment)
-    
     # Define bounding boxes for both elements
-    graph = ind_set_problem.get_graph()
     formula = three_sat_problem.get_formula()
-    graph_bounding_box = np.array([[400, 50], [780, 550]])  # Right side of the window
-    formula_bounding_box = np.array([[20, 50], [380, 200]])  # Left upper side
-    graph.set_bounding_box(graph_bounding_box)
-    graph.determine_node_positions()
+    formula_bounding_box = np.array([[50, 50], [600, 600]]) 
     formula.set_bounding_box(formula_bounding_box)
     
     # Initialize Pygame
@@ -63,8 +43,7 @@ def main():
                 running = False
 
         # Display both elements
-        ind_set_problem.display_problem(screen)
-        three_sat_problem.display_problem(screen)
+        three_sat_problem.display_solution(screen)
 
         pygame.display.flip()
         clock.tick(30)  # Limit FPS to 30

@@ -1,13 +1,14 @@
 from npvis.element.element import Graph, Node, Edge
+from npvis.problem.np_problem import NPProblem
 
-class IndependentSetProblem:
+class IndependentSetProblem(NPProblem):
     """
     Manages the graph structure for an Independent Set problem.
     No visualization is handled here.
     """
 
     def __init__(self):
-        self.graph = Graph()
+        super().__init__(Graph())
         self.next_node_id = 1
 
     def add_node(self, name=None) -> Node:
@@ -25,7 +26,7 @@ class IndependentSetProblem:
         
         node_name = name if name else str(self.next_node_id)
         node = Node(self.next_node_id, node_name)
-        self.graph.add_node(node)
+        self.element.add_node(node)
         self.next_node_id += 1
         return node
 
@@ -36,11 +37,11 @@ class IndependentSetProblem:
         assert node1 != None, "Node 1 is None."
         assert node2 != None, "Node 2 is None."
         assert node1 != node2, "Cannot add an edge between the same node."
-        assert node1 in self.graph.nodes, "Node 1 is not in the graph."
-        assert node2 in self.graph.nodes, "Node 2 is not in the graph."
+        assert node1 in self.element.nodes, "Node 1 is not in the graph."
+        assert node2 in self.element.nodes, "Node 2 is not in the graph."
         
         edge = Edge(node1, node2)
-        self.graph.add_edge(edge)
+        self.element.add_edge(edge)
         
     def add_group(self, nodes) -> None:
         """
@@ -49,9 +50,9 @@ class IndependentSetProblem:
         assert len(nodes) > 0, "Group must contain at least one node."
         assert len(set(nodes)) == len(nodes), "Group contains duplicate nodes."
         for node in nodes:
-            assert node in self.graph.nodes, "Node is not in the graph."
+            assert node in self.element.nodes, "Node is not in the graph."
         
-        self.graph.groups.append(nodes)
+        self.element.groups.append(nodes)
 
     def is_independent_set(self, node_ids) -> bool:
         """
@@ -66,8 +67,8 @@ class IndependentSetProblem:
         node_ids = set(node_ids)
         for node1_id in node_ids:
             for node2_id in node_ids:
-                if node1_id != node2_id and self.graph.hasEdge(
-                    self.graph.get_node_by_id(node1_id), self.graph.get_node_by_id(node2_id)
+                if node1_id != node2_id and self.element.hasEdge(
+                    self.element.get_node_by_id(node1_id), self.element.get_node_by_id(node2_id)
                 ):
                     return False
         return True
@@ -76,7 +77,21 @@ class IndependentSetProblem:
         """
         Returns the underlying Graph object.
         """
-        return self.graph
+        return self.element
+    
+    def set_solution_by_id(self, solution):
+        indepent_set = set()
+        other_set = set()
+        for node in self.element.nodes:
+            node_id = node.node_id
+            if node_id in solution:
+                indepent_set.add(node)
+            else:
+                other_set.add(node)
+        sol = [indepent_set, other_set]
+        self.set_solution(sol)
+
+
 
 if __name__ == "__main__":
     ind_set_problem = IndependentSetProblem()

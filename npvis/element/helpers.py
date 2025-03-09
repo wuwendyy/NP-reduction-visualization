@@ -44,11 +44,15 @@ class SATSolution:
 
 
 class Variable:
-    def __init__(self, name, is_not_negated, clause_id, var_id):
+    def __init__(self, name, is_not_negated, clause_id, var_id, color=(0, 0, 0)):
         self.name = name
         self.is_not_negated = is_not_negated
         self.clause_id = clause_id
         self.id = var_id
+        self.color = color
+
+    def change_color(self, new_color):
+        self.color = new_color
 
     def __str__(self):
         sign = "" if self.is_not_negated else "¬"

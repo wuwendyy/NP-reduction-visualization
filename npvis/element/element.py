@@ -14,7 +14,7 @@ from npvis.element.graph_drawing_utils import (
 class Element:
     # display to pygame
     @abstractmethod
-    def display(self):
+    def display(self, screen):
         raise NotImplementedError
 
     # parse in from file
@@ -195,7 +195,7 @@ class Graph(Element):
             text_rect = text_surface.get_rect(center=(int(node.location[0]), int(node.location[1])))
             screen.blit(text_surface, text_rect)
 
-class Formula:
+class Formula(Element):
     def __init__(self, bounding_box=np.array([[50, 50], [550, 550]])):
         self.clauses = []
         self.bounding_box = bounding_box
@@ -255,36 +255,57 @@ class Formula:
         max_height = self.bounding_box[1][1] - y
         line_height = 30  # Height per line
         current_y = y
+        default_color = (0,0,0)
 
-        # Convert clauses into formatted strings
-        formatted_clauses = []
-        for clause in self.clauses:
-            clause_str = "(" + " OR ".join(str(var) for var in clause.variables) + ")"
-            formatted_clauses.append(clause_str)
+        for c, clause in enumerate(self.clauses):
+            or_surface = self.font.render("(", True, default_color)
+            screen.blit(or_surface, (x, y))
+            x += or_surface.get_width()
+            for i, var in enumerate(clause.variables):
+                # Render variable with its own color (assumes var.color is an (R,G,B) tuple)
+                var_surface = self.font.render(str(var), True, var.color)
+                screen.blit(var_surface, (x, y))
+                word_width =  var_surface.get_width()
+                x += word_width
+                # Add " OR " if not the last variable
+                if i < len(clause.variables) - 1:
+                    or_surface = self.font.render(" OR ", True, default_color)
+                    screen.blit(or_surface, (x, y))
+                    word_width = or_surface.get_width()
+                elif c < len(self.clauses) - 1: 
+                    or_surface = self.font.render(") AND ", True, default_color)
+                    screen.blit(or_surface, (x, y))
+                    word_width = or_surface.get_width()
+                else:
+                    or_surface = self.font.render(")", True, default_color)
+                    screen.blit(or_surface, (x, y))
+                    word_width = or_surface.get_width()
+                
+                x += word_width
+                # If the word doesn't fit in the current line, move to the next line
+                if x > self.bounding_box[1][0]:
+                    x = self.bounding_box[0][0]
+                    y += line_height
+                
+            # temp_surface = screen.font.render(current_line + (" AND " if current_line else "") + clause, True, (0, 0, 0))
+            # temp_width = temp_surface.get_width()
 
-        text_lines = []
-        current_line = ""
+        #     if x > max_width:
+        #         if not current_line:
+        #             raise ValueError(f"Clause '{clause}' is too wide to fit in bounding box.")
 
-        for clause in formatted_clauses:
-            temp_surface = self.font.render(current_line + (" AND " if current_line else "") + clause, True, (0, 0, 0))
-            temp_width = temp_surface.get_width()
+        #         text_lines.append(current_line)
+        #         current_line = clause
+        #     else:
+        #         current_line += (" AND " if current_line else "") + clause
 
-            if temp_width > max_width:
-                if not current_line:
-                    raise ValueError(f"Clause '{clause}' is too wide to fit in bounding box.")
+        # if current_line:
+        #     text_lines.append(current_line)
 
-                text_lines.append(current_line)
-                current_line = clause
-            else:
-                current_line += (" AND " if current_line else "") + clause
+        # if len(text_lines) * line_height > max_height:
+        #     raise ValueError("Not enough space to display all clauses within the bounding box.")
 
-        if current_line:
-            text_lines.append(current_line)
-
-        if len(text_lines) * line_height > max_height:
-            raise ValueError("Not enough space to display all clauses within the bounding box.")
-
-        for i, line in enumerate(text_lines):
-            text_surface = self.font.render(line, True, (0, 0, 0))
-            screen.blit(text_surface, (x, current_y + i * line_height))
+        # for i, line in enumerate(text_lines):
+        #     text_surface = self.font.render(line, True, (0, 0, 0))
+        #     screen.blit(text_surface, (x, current_y + i * line_height))
     

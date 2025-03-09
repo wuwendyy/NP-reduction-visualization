@@ -3,6 +3,10 @@ class Reduction:
     def __init__(self, problem1, problem2):
         self.problem1 = problem1
         self.problem2 = problem2
+        self.input1_to_input2_pairs = []
+        self.output1_to_output2_pairs = []
+        self.output2_to_output1_pairs = []
+        
 
     '''
     method to populate input_to_input_pairs list
@@ -22,8 +26,17 @@ class Reduction:
     def solution2_to_solution1(self):
         pass
 
-    def display_input_to_input(self):
-        pass
+    def display_input_to_input(self, clicked_helper):
+        if clicked_helper is not None:
+            # The user click on problem 1 element 
+            clicked_helper.change_color((0, 255, 0))
+            # Loop to see all colors that need change:
+            for (e1,e2) in self.input1_to_input2_pairs:
+                if e1 == clicked_helper:
+                    e2.change_color((0, 255, 0))
+                elif e2 == clicked_helper:
+                    e1.change_color((0, 255, 0))
+    
 
     def display_output1_to_output2(self):
         pass
