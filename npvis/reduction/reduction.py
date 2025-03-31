@@ -3,7 +3,7 @@ class Reduction:
     def __init__(self, problem1, problem2):
         self.problem1 = problem1
         self.problem2 = problem2
-        self.input1_to_input2_pairs = []
+        self.input1_to_input2_pairs = [] # TODO: to be implemented when constructing the reduction
         self.output1_to_output2_pairs = []
         self.output2_to_output1_pairs = []
         
