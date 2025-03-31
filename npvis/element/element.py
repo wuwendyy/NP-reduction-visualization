@@ -1,15 +1,17 @@
 import math
 import pygame
 import numpy as np
+import networkx as nx
 
 from abc import abstractmethod
 from npvis.element.helpers import Node, Edge, Clause, Variable
 from npvis.element.graph_drawing_utils import (
-    has_overlapping_edge, 
+    has_overlapping_edge,
     draw_bezier_curve,
-    draw_thick_bezier_curve, 
+    draw_thick_bezier_curve,
     find_best_control_point
 )
+
 
 class Element:
     # display to pygame
@@ -44,7 +46,7 @@ class Graph(Element):
         self.node_dict = None
         self._create_node_dictionary()
         self.node_radius = node_radius
-        
+
     def set_bounding_box(self, bounding_box):
         self.bounding_box = bounding_box
 
@@ -65,6 +67,7 @@ class Graph(Element):
     '''
     Read in nodes, edges, and groups from a file
     '''
+
     def parse(self, filename):
         self.nodes = []  # Ensure fresh
         self.edges = []
@@ -98,9 +101,11 @@ class Graph(Element):
 
     def add_edge(self, edge):
         self.edges.add(edge)
-        
+
     def hasEdge(self, node1, node2):
-        return any(edge.node1 == node1 and edge.node2 == node2 or edge.node1 == node2 and edge.node2 == node1 for edge in self.edges)
+        return any(
+            edge.node1 == node1 and edge.node2 == node2 or edge.node1 == node2 and edge.node2 == node1 for edge in
+            self.edges)
 
     def get_node_by_id(self, node_id):
         """
@@ -122,8 +127,11 @@ class Graph(Element):
         if len(self.groups) != 0:
             # has group assignment 
             self.determine_node_positions_by_groups()
+        else:
+            # use networkx to generate node positions
+            self.determine_node_positions_nx()
         return
-    
+
     def _create_node_dictionary(self):
         '''
         Create dictionary for node loop up
@@ -176,6 +184,27 @@ class Graph(Element):
                 r += 1
                 c = 0
 
+    def determine_node_positions_nx(self):
+        # create a networkx graph
+        g = nx.Graph()
+        g.add_nodes_from(self.node_dict.keys())
+
+        for edge in self.edges:
+            g.add_edge(edge.node1.node_id, edge.node2.node_id)
+
+        # arf_layout to space out nodes, keep symmetrical
+        node_pos = nx.arf_layout(g)
+        nx.draw(g)
+
+        bounding_box_dim = self.bounding_box[1, :] - self.bounding_box[0, :]
+        bounding_box_center = 0.5 * (self.bounding_box[0] + self.bounding_box[1])
+        node_pos = nx.rescale_layout_dict(node_pos, 1)
+
+        # assign node locations in this graph from completed/rescaled nx graph
+        for node in self.nodes:
+            node.location = node_pos[node.node_id] * (bounding_box_dim / 2)
+            node.location = np.add(node.location, bounding_box_center)
+
     def display(self, screen):
         for edge in self.edges:
             start_pos = edge.node1.location
@@ -195,13 +224,14 @@ class Graph(Element):
             text_rect = text_surface.get_rect(center=(int(node.location[0]), int(node.location[1])))
             screen.blit(text_surface, text_rect)
 
+
 class Formula(Element):
     def __init__(self, bounding_box=np.array([[50, 50], [550, 550]])):
         self.clauses = []
         self.bounding_box = bounding_box
         self.font = None
         self.literal_dict = {}
-        
+
     def set_bounding_box(self, bounding_box):
         self.bounding_box = bounding_box
 
@@ -255,7 +285,7 @@ class Formula(Element):
         max_height = self.bounding_box[1][1] - y
         line_height = 30  # Height per line
         current_y = y
-        default_color = (0,0,0)
+        default_color = (0, 0, 0)
 
         for c, clause in enumerate(self.clauses):
             or_surface = self.font.render("(", True, default_color)
@@ -265,14 +295,14 @@ class Formula(Element):
                 # Render variable with its own color (assumes var.color is an (R,G,B) tuple)
                 var_surface = self.font.render(str(var), True, var.color)
                 screen.blit(var_surface, (x, y))
-                word_width =  var_surface.get_width()
+                word_width = var_surface.get_width()
                 x += word_width
                 # Add " OR " if not the last variable
                 if i < len(clause.variables) - 1:
                     or_surface = self.font.render(" OR ", True, default_color)
                     screen.blit(or_surface, (x, y))
                     word_width = or_surface.get_width()
-                elif c < len(self.clauses) - 1: 
+                elif c < len(self.clauses) - 1:
                     or_surface = self.font.render(") AND ", True, default_color)
                     screen.blit(or_surface, (x, y))
                     word_width = or_surface.get_width()
@@ -280,13 +310,13 @@ class Formula(Element):
                     or_surface = self.font.render(")", True, default_color)
                     screen.blit(or_surface, (x, y))
                     word_width = or_surface.get_width()
-                
+
                 x += word_width
                 # If the word doesn't fit in the current line, move to the next line
                 if x > self.bounding_box[1][0]:
                     x = self.bounding_box[0][0]
                     y += line_height
-                
+
             # temp_surface = screen.font.render(current_line + (" AND " if current_line else "") + clause, True, (0, 0, 0))
             # temp_width = temp_surface.get_width()
 
@@ -308,4 +338,3 @@ class Formula(Element):
         # for i, line in enumerate(text_lines):
         #     text_surface = self.font.render(line, True, (0, 0, 0))
         #     screen.blit(text_surface, (x, current_y + i * line_height))
-    
