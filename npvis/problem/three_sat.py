@@ -23,17 +23,16 @@ class ThreeSATProblem(NPProblem):
             ]
         Instead of reading from a file.
         """
-        self.clauses = []
         clause_id = 1
         variable_id = 1  # Unique ID for each variable
         for clause_tuple_list in list_of_clause_tuples:
             clause_obj = Clause(clause_id)
-            for (var_id, is_negated) in clause_tuple_list:
+            for (var_id, is_without_negation) in clause_tuple_list:
                 # 'name' can be the same as var_id or some string 
                 # representation, up to you.
                 variable_obj = Variable(
                     name=str(var_id),
-                    is_negated=is_negated,
+                    is_negated= not is_without_negation,
                     clause_id=clause_id,
                     var_id=variable_id
                 )
