@@ -9,8 +9,40 @@ class ThreeSATProblem(NPProblem):
 
     def __init__(self):
         super().__init__(Formula())
-        self.formula = self.instance
-
+        self.clauses = []  # List of clauses in the formula
+        
+    
+    def load_formula_from_tuples(self, list_of_clause_tuples):
+        """
+        OPTIONAL helper method if you want to load the formula from 
+        a Python list of tuples like:
+            [ 
+              [(1, False), (2, True), (3, True)],
+              [(1, True),  (2, False), (3, True)],
+              [(1, False), (2, True),  (4, True)]
+            ]
+        Instead of reading from a file.
+        """
+        self.clauses = []
+        clause_id = 1
+        variable_id = 1  # Unique ID for each variable
+        for clause_tuple_list in list_of_clause_tuples:
+            clause_obj = Clause(clause_id)
+            for (var_id, is_not_negated) in clause_tuple_list:
+                # 'name' can be the same as var_id or some string 
+                # representation, up to you.
+                variable_obj = Variable(
+                    name=str(var_id),
+                    is_not_negated=is_not_negated,
+                    clause_id=clause_id,
+                    var_id=variable_id
+                )
+                variable_id += 1
+                clause_obj.add_variable(variable_obj)
+            self.clauses.append(clause_obj)
+            clause_id += 1
+            
+            
     def add_clause(self, literals) -> None:
         """
         Adds a clause to the formula.

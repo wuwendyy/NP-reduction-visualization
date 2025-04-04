@@ -24,14 +24,14 @@ class ThreeSatToIndependentSetReduction(Reduction):
     def build_graph_from_formula(self):
         formula_list = self.problem1.clauses
 
-        # You can do something like:
-        print("DEBUG: formula_list =", formula_list)
-        print("DEBUG: formula_list types =", [(type(item), item) for item in formula_list])
+        # # You can do something like:
+        # print("DEBUG: formula_list =", formula_list)
+        # print("DEBUG: formula_list types =", [(type(item), item) for item in formula_list])
 
-        for clause in formula_list:
-            print("DEBUG: Clause type =", type(clause), "Clause value =", clause)
-            for literal in clause:
-                print("DEBUG: Literal type =", type(literal), "Literal value =", literal)
+        # for clause in formula_list:
+        #     print("DEBUG: Clause type =", type(clause), "Clause value =", clause)
+        #     for literal in clause.variables:
+        #         print("DEBUG: Literal type =", type(literal), "Literal value =", literal)
                 
         # Create nodes per clause and fully connect them.
         for clause in formula_list:
@@ -130,7 +130,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
 
         # Ensure all variables in the formula are assigned a value
         # all_vars = {var for clause in formula_list for var, _ in clause}  # ✅ Fix: Using correct formula structure
-        all_vars = {literal.name for clause in formula_list for literal in clause}
+        all_vars = {literal.name for clause in formula_list for literal in clause.variables}  # ✅ Fix: Using correct formula structure
 
         for var in sorted(all_vars):
             if var not in sat_assignment:
@@ -149,8 +149,9 @@ class ThreeSatToIndependentSetReduction(Reduction):
                     if var in sat_assignment:
                         break  # Stop searching once assigned
 
-        print(f"Recovered SAT Assignment: {sat_assignment}\n")
-        print("Conversion to SAT Assignment completed!\n")
+        # print(f"Recovered SAT Assignment: {sat_assignment}\n")
+        # print("Conversion to SAT Assignment completed!\n")
+        return sat_assignment
 
     def test_solution(self, sat_assignment):
         satisfied = self.problem1.evaluate(sat_assignment)

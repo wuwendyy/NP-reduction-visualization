@@ -17,8 +17,15 @@ class Node:
     def add_neighbor(self, neighbor):
         self.neighbors.append(neighbor)
         
+    # def __repr__(self):
+    #     return f"Node(ID={self.node_id}, Name={self.name}, Location={self.location.tolist()}, Neighbors={self.neighbors})"
     def __repr__(self):
-        return f"Node(ID={self.node_id}, Name={self.name}, Location={self.location.tolist()}, Neighbors={self.neighbors})"
+        return f"Node(ID={self.node_id})"
+
+    
+    def __lt__(self, other):
+        # define "less than" based on node_id
+        return self.node_id < other.node_id
 
 
 class Edge:

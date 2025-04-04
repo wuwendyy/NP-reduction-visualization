@@ -37,6 +37,7 @@ def main():
 
     recovered_assignment = reduction.sol2tosol1(is_set)
     print("Recovered SAT assignment:", recovered_assignment)
+    print("Conversion to SAT Assignment completed!\n")
     
     # Define bounding boxes for both elements
     graph = ind_set_problem.get_graph()
