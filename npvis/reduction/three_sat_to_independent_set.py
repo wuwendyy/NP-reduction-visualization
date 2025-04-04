@@ -22,7 +22,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
         
         
     def build_graph_from_formula(self):
-        formula_list = self.problem1.get_as_list()
+        formula_list = self.problem1.clauses
 
         # You can do something like:
         print("DEBUG: formula_list =", formula_list)
@@ -62,7 +62,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
 
     def sol1tosol2(self, sat_assignment):
         independent_set = set()
-        formula_list = self.problem1.get_as_list()
+        formula_list = self.problem1.clauses
 
         for clause in formula_list:
             chosen_node = None
@@ -108,7 +108,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
         sat_assignment = {}
 
         # Fetch structured formula list
-        formula_list = self.problem1.get_as_list()  # ✅ Fixing the access to formula
+        formula_list = self.problem1.clauses  # ✅ Fixing the access to formula
 
         print(f"Independent Set Input (sorted): {sorted(independent_set)}\n")
 
