@@ -18,7 +18,7 @@ def main():
     three_sat_problem.load_formula_from_tuples(clauses)
 
     # 3) Create the reduction
-    reduction = ThreeSatToIndependentSetReduction(three_sat_problem, ind_set_problem)
+    reduction = ThreeSatToIndependentSetReduction(three_sat_problem, ind_set_problem, 1)
 
     # 4) Build graph from 3-SAT
     reduction.build_graph_from_formula()

@@ -28,18 +28,19 @@ class ThreeSATProblem(NPProblem):
         variable_id = 1  # Unique ID for each variable
         for clause_tuple_list in list_of_clause_tuples:
             clause_obj = Clause(clause_id)
-            for (var_id, is_not_negated) in clause_tuple_list:
+            for (var_id, is_negated) in clause_tuple_list:
                 # 'name' can be the same as var_id or some string 
                 # representation, up to you.
                 variable_obj = Variable(
                     name=str(var_id),
-                    is_not_negated=is_not_negated,
+                    is_negated=is_negated,
                     clause_id=clause_id,
                     var_id=variable_id
                 )
                 variable_id += 1
                 clause_obj.add_variable(variable_obj)
             self.clauses.append(clause_obj)
+            self.element.clauses.append(clause_obj)
             clause_id += 1
             
             
@@ -48,14 +49,14 @@ class ThreeSATProblem(NPProblem):
         Adds a clause to the formula.
 
         Args:
-            literals (list): A list of tuples (var_id, is_not_negated).
+            literals (list): A list of tuples (var_id, is_negated).
                              E.g., [(1, True), (2, False), (3, True)]
         """
         clause_idx = len(self.element.clauses) + 1
         clause_obj = Clause(clause_idx)
 
-        for lit_id, (var_id, is_not_negated) in enumerate(literals, start=1):
-            variable = Variable(var_id, is_not_negated, clause_idx, lit_id)
+        for lit_id, (var_id, is_negated) in enumerate(literals, start=1):
+            variable = Variable(var_id, is_negated, clause_idx, lit_id)
             clause_obj.add_variable(variable)
 
         self.element.clauses.append(clause_obj)
@@ -65,7 +66,7 @@ class ThreeSATProblem(NPProblem):
         Bulk-loads a set of clauses into the formula.
 
         Args:
-            clause_list (list): Each item is a list of (var_id, is_not_negated).
+            clause_list (list): Each item is a list of (var_id, is_negated).
                                 E.g., [[(1, False), (2, True), (3, True)], ...]
         """
         for clause in clause_list:
@@ -90,7 +91,7 @@ class ThreeSATProblem(NPProblem):
         result = False
         for var in clause_obj.variables:
             # assignment.get(...) defaults to False if variable not in assignment
-            if assignment.get(var.name, False) == var.is_not_negated:
+            if assignment.get(var.name, False) != var.is_negated:
                 result = True
                 break
         return result
@@ -107,14 +108,14 @@ class ThreeSATProblem(NPProblem):
 
     def get_as_list(self) -> list[list[tuple[str, bool]]]:
         """
-        Returns the formula as a list of lists of (var_id, is_not_negated).
+        Returns the formula as a list of lists of (var_id, is_negated).
         Helps in interfacing with other modules or for debugging.
         """
         output = []
         for clause_obj in self.element.clauses:
             clause_list = []
             for var in clause_obj.variables:
-                clause_list.append((var.name, var.is_not_negated))
+                clause_list.append((var.name, var.is_negated))
             output.append(clause_list)
         return output
     
@@ -132,7 +133,7 @@ class ThreeSATProblem(NPProblem):
             for var in clause.variables:
                 # assignment.get(...) defaults to False if variable not in assignment
                 is_true = assignment.get(var.name, False)
-                if not var.is_not_negated:
+                if var.is_negated:
                     is_true = not is_true
                 if is_true:
                     true_set.add(var)

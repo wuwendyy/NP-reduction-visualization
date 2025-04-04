@@ -51,9 +51,9 @@ class SATSolution:
 
 
 class Variable:
-    def __init__(self, name, is_not_negated, clause_id, var_id, color=(0, 0, 0)):
+    def __init__(self, name, is_negated, clause_id, var_id, color=(0, 0, 0)):
         self.name = name
-        self.is_not_negated = is_not_negated
+        self.is_negated = is_negated
         self.clause_id = clause_id
         self.id = var_id
         self.color = color
@@ -62,7 +62,7 @@ class Variable:
         self.color = new_color
 
     def __str__(self):
-        sign = "" if self.is_not_negated else "¬"
+        sign = "" if self.is_negated else "¬"
         return f"{sign}x{self.name}"
 
     def __repr__(self):
@@ -77,4 +77,4 @@ class Clause:
         self.variables.append(variable)
 
     def evaluate(self, solution):
-        return any(solution.get(v.name, False) == v.is_not_negated for v in self.variables)
+        return any(solution.get(v.name, False) == v.is_negated for v in self.variables)

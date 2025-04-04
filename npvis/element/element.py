@@ -256,13 +256,13 @@ class Formula(Element):
                 tokens = clause_str.split()
                 i = 0
                 while i < len(tokens):
-                    is_not_negated = True
+                    is_negated = False
                     if tokens[i] == "NOT":
-                        is_not_negated = False
+                        is_negated = True
                         i += 1  # Move to variable name
 
                     var_name = tokens[i]
-                    variable = Variable(var_name, is_not_negated, counter, variable_counter)
+                    variable = Variable(var_name, is_negated, counter, variable_counter)
                     variable_counter += 1
                     clause.add_variable(variable)
 
@@ -286,12 +286,12 @@ class Formula(Element):
         variable_id = 1  # Unique ID for each variable
         for clause_tuple_list in list_of_clause_tuples:
             clause_obj = Clause(clause_id)
-            for (var_id, is_not_negated) in clause_tuple_list:
+            for (var_id, is_negated) in clause_tuple_list:
                 # 'name' can be the same as var_id or some string 
                 # representation, up to you.
                 variable_obj = Variable(
                     name=str(var_id),
-                    is_not_negated=is_not_negated,
+                    is_negated=is_negated,
                     clause_id=clause_id,
                     var_id=variable_id
                 )
