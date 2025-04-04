@@ -62,7 +62,7 @@ class Variable:
         self.color = new_color
 
     def __str__(self):
-        sign = "" if self.is_negated else "¬"
+        sign = "" if not self.is_negated else "¬"
         return f"{sign}x{self.name}"
 
     def __repr__(self):

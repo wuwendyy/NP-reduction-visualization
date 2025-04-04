@@ -231,6 +231,7 @@ class Formula(Element):
         self.bounding_box = bounding_box
         self.font = None
         self.literal_dict = {}
+        self.DEBUG = True
 
     def set_bounding_box(self, bounding_box):
         self.bounding_box = bounding_box
@@ -269,7 +270,7 @@ class Formula(Element):
                     i += 2  # Skip OR
 
                 self.clauses.append(clause)
-                
+  
     def load_formula_from_tuples(self, list_of_clause_tuples):
         """
         OPTIONAL helper method if you want to load the formula from 
@@ -286,12 +287,12 @@ class Formula(Element):
         variable_id = 1  # Unique ID for each variable
         for clause_tuple_list in list_of_clause_tuples:
             clause_obj = Clause(clause_id)
-            for (var_id, is_negated) in clause_tuple_list:
+            for (var_id, is_TRUE) in clause_tuple_list:
                 # 'name' can be the same as var_id or some string 
                 # representation, up to you.
                 variable_obj = Variable(
                     name=str(var_id),
-                    is_negated=is_negated,
+                    is_negated = 1- is_TRUE,
                     clause_id=clause_id,
                     var_id=variable_id
                 )

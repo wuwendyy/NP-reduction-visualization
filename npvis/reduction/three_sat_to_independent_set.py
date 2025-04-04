@@ -90,7 +90,8 @@ class ThreeSatToIndependentSetReduction(Reduction):
                 node = self.input1_to_input2_pairs[literal]
                 var_id = literal.name        # The variable name/ID
                 is_negated = literal.is_negated
-                assigned_value = sat_assignment.get(var_id, False)
+                # for 1:TRUE, get TRUE when using 1 as key
+                assigned_value = sat_assignment[int(var_id)]
 
                 self._debug_print(
                     f"    Checking literal {literal} in Clause #{clause_idx}: "
@@ -110,10 +111,11 @@ class ThreeSatToIndependentSetReduction(Reduction):
             else:
                 self._debug_print(f"    No satisfied literal found in Clause #{clause_idx} based on this assignment.")
 
-        self._debug_print(f"Constructed Independent Set: {independent_set}\n")
+        self._debug_print(f"Constructed Independent Set: {sorted(independent_set)}\n")
         self._debug_print("Finished sol1tosol2.\n")
         return independent_set
 
+    # def sol2tosol1(self, independent_set):
     def sol2tosol1(self, independent_set):
         """
         Convert an Independent Set (set of node_ids) back to a SAT assignment.
@@ -122,40 +124,33 @@ class ThreeSatToIndependentSetReduction(Reduction):
         sat_assignment = {}
         formula_list = self.problem1.clauses
 
-        # 1. Assign based on which nodes are selected
+        # 1. Assign based on selected nodes
         self._debug_print("Assigning variables for selected nodes in the Independent Set.")
         for literal, node in self.input1_to_input2_pairs.items():
-            if node.node_id in independent_set:
+            if node in independent_set:
                 var = literal.name
+                self._debug_print(f" node {node.node_id} is in the independent set.")
                 is_negated = literal.is_negated
+                self._debug_print(f"is_negated: {is_negated} for literal: {literal}")
                 self.output2_to_output1_pairs[node] = literal  # Reverse mapping
 
-                sat_assignment[var] = not is_negated
+                # If already assigned, skip (to prevent overwriting)
+                if var not in sat_assignment: # not assigned a value yet
+                    sat_assignment[var] = not  is_negated
+                    self._debug_print(
+                        f"  Selected node {node.node_id} => literal {literal}; "
+                        f"assigning var {var} = {not is_negated}"
+                    )
 
-                self._debug_print(
-                    f"  Selected node {node.node_id} => literal {literal}; "
-                    f"assigning var {var} = {not is_negated}"
-                )
-
-        # 2. Ensure all variables appear in the final assignment
+        # 2. Ensure all variables are assigned
         all_vars = {literal.name for clause in formula_list for literal in clause.variables}
-        self._debug_print("\nEnsuring all variables are assigned (unselected nodes get complementary assignment).")
+        self._debug_print("\nEnsuring all variables are assigned (default = False).")
         for var in sorted(all_vars):
             if var not in sat_assignment:
-                # if we want default behavior, we can flip
-                # or do some logic to find a literal with this var
-                for clause in formula_list:
-                    for literal in clause.variables:
-                        if literal.name == var:
-                            # if we didn't pick it, let's pick the opposite?
-                            sat_assignment[var] = not literal.is_negated
-                            self._debug_print(
-                                f"  var {var} was missing; found literal {literal}, "
-                                f"assigning var {var} = {sat_assignment[var]}"
-                            )
-                            break
-                    if var in sat_assignment:
-                        break  # Stop once we've assigned it
+                sat_assignment[var] = False
+                self._debug_print(
+                    f"  var {var} was missing from IS; assigning default value var {var} = False"
+                )
 
         self._debug_print(f"\nFinal recovered SAT Assignment: {sat_assignment}")
         self._debug_print("Finished sol2tosol1.\n")
