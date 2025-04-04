@@ -10,7 +10,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
         self.output1_to_output2_pairs = []
         self.output2_to_output1_pairs = []
         self.formula = three_sat_problem.get_formula()
-        self.graph, self.clause_vertices, self.literal_to_formula_indices, self.self.input1_to_input2_pairs, self.literal_id_to_node_id = self.build_3sat_graph_from_formula()
+        self.graph, self.clause_vertices, self.literal_to_formula_indices, self.input1_to_input2_pairs, self.literal_id_to_node_id = self.build_3sat_graph_from_formula()
         
     # def __init__(self, formula: Formula):
     #     """
@@ -22,7 +22,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
     #     """
     #     self.formula = formula
     #     # literal id to node id = input to input pair
-    #     self.graph, self.clause_vertices, self.literal_to_formula_indices, self.self.input1_to_input2_pairs, self.literal_id_to_node_id = self.build_3sat_graph_from_formula()
+    #     self.graph, self.clause_vertices, self.literal_to_formula_indices, self.input1_to_input2_pairs, self.literal_id_to_node_id = self.build_3sat_graph_from_formula()
     #     self.output1_to_output2 = {} 
     #     self.output2_to_output1 = {}
         
@@ -126,8 +126,9 @@ class ThreeSatToIndependentSetReduction(Reduction):
                 G.add_node(node) # i want a pass by reference mapping to map each litreral to a node object
                 c_nodes.append(node)
 
-                # Store mappings
-                self.input1_to_input2_pairs[(literal, c_idx)] = node
+                # Store mappings 
+                # self.input1_to_input2_pairs[(literal, c_idx)] = node
+                self.input1_to_input2_pairs[literal] = node
                 literal_to_formula_indices.setdefault(literal, []).append((c_idx, lit_idx))
                 literal_id_to_node_id[literal.id] = node_id
 
@@ -151,8 +152,10 @@ class ThreeSatToIndependentSetReduction(Reduction):
                     None
                 )
                 if opposite_literal:
-                    node1 = self.input1_to_input2_pairs.get((literal, c_idx))
-                    node2 = self.input1_to_input2_pairs.get((opposite_literal, c_idx + 1))
+                    # node1 = self.input1_to_input2_pairs.get((literal, c_idx))
+                    # node2 = self.input1_to_input2_pairs.get((opposite_literal, c_idx + 1))
+                    node1 = self.input1_to_input2_pairs[literal]
+                    node2 = self.input1_to_input2_pairs[opposite_literal]
                     if node1 and node2:
                         G.add_edge(Edge(node1, node2))
 
@@ -187,7 +190,8 @@ class ThreeSatToIndependentSetReduction(Reduction):
 
                 # Check if the assignment satisfies the literal
                 if (sat_assignment[var] == 1 and is_not_negated) or (sat_assignment[var] == 0 and not is_not_negated):
-                    node = self.self.input1_to_input2_pairs.get((literal, c_idx))  # Correct lookup
+                    # node = self.input1_to_input2_pairs.get((literal, c_idx))  # Correct lookup
+                    node = self.input1_to_input2_pairs[literal]
                     if node:
                         independent_set.add(node.node_id)
                         self.output1_to_output2_pairs[literal] = node
@@ -217,7 +221,8 @@ class ThreeSatToIndependentSetReduction(Reduction):
         print(f"Independent Set Input (sorted): {sorted(independent_set)}\n")
 
         # Assign values based on selected nodes in the independent set
-        for (literal, clause_idx), node in self.self.input1_to_input2_pairs.items():
+        for literal, node in self.input1_to_input2_pairs.items():
+            clause_idx = literal.clause_id
             if node.node_id in independent_set:
                 var = literal.name
                 is_not_negated = literal.is_not_negated

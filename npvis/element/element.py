@@ -270,9 +270,18 @@ class Formula(Element):
 
                 self.clauses.append(clause)
 
+    # def get_as_list(self):
+    #     return [[v for v in clause.variables] for clause in self.clauses]
     def get_as_list(self):
-        return [[v for v in clause.variables] for clause in self.clauses]
-
+        """
+        Return a list of Clause objects so that we can do:
+            for clause in formula_list:
+                for literal in clause.variables:
+                    ...
+        """
+        # Simply return the stored list of Clause objects.
+        return self.clauses
+    
     def evaluate(self, solution):
         return all(clause.evaluate(solution) for clause in self.clauses)
 
