@@ -6,6 +6,9 @@ class Reduction:
         self.input1_to_input2_pairs = [] #ref_to_ref pairs
         self.output1_to_output2_pairs = []
         self.output2_to_output1_pairs = []
+        self.input1_to_input2_dict = {}
+        self.output1_to_output2_pairs_dict = {}
+        self.output2_to_output1_pairs_dict = {}
         
 
     '''

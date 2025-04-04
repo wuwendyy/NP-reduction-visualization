@@ -50,6 +50,13 @@ class ThreeSatToIndependentSetReduction(Reduction):
 
             # Group the clause's nodes
             self.problem2.add_group(clause_nodes)
+
+            # append to internal set:set mapping
+            nodes_set = frozenset(clause_nodes)
+            clause_set = frozenset({clause})
+            self.input1_to_input2_dict[clause_set] = nodes_set
+            # self.input2_to_input1_dict[nodes_set] = clause_set # is this needed?
+
             self._debug_print(f"  Added group for Clause #{c_idx}: node IDs {[n.node_id for n in clause_nodes]}.")
 
             # Fully connect them
