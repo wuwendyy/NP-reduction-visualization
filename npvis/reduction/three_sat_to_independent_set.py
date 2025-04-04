@@ -24,6 +24,15 @@ class ThreeSatToIndependentSetReduction(Reduction):
     def build_graph_from_formula(self):
         formula_list = self.problem1.get_as_list()
 
+        # You can do something like:
+        print("DEBUG: formula_list =", formula_list)
+        print("DEBUG: formula_list types =", [(type(item), item) for item in formula_list])
+
+        for clause in formula_list:
+            print("DEBUG: Clause type =", type(clause), "Clause value =", clause)
+            for literal in clause:
+                print("DEBUG: Literal type =", type(literal), "Literal value =", literal)
+                
         # Create nodes per clause and fully connect them.
         for clause in formula_list:
             clause_nodes = []

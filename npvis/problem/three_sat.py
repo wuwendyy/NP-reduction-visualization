@@ -9,6 +9,7 @@ class ThreeSATProblem(NPProblem):
 
     def __init__(self):
         super().__init__(Formula())
+        self.formula = self.instance
 
     def add_clause(self, literals) -> None:
         """

@@ -15,7 +15,7 @@ def main():
         [(1, True), (2, False), (3, True)],
         [(1, False), (2, True), (4, True)]
     ]
-    three_sat_problem.load_formula(clauses)
+    three_sat_problem.load_formula_from_tuples(clauses)
 
     # 3) Create the reduction
     reduction = ThreeSatToIndependentSetReduction(three_sat_problem, ind_set_problem)
