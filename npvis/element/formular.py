@@ -146,6 +146,11 @@ class Formula(Element):
         # for i, line in enumerate(text_lines):
         #     text_surface = self.font.render(line, True, (0, 0, 0))
         #     screen.blit(text_surface, (x, current_y + i * line_height))
+        
+        # Debug bounding box
+        pygame.draw.rect(screen, (0, 0, 255), pygame.Rect(self.bounding_box[0][0], self.bounding_box[0][1],
+                                                        self.bounding_box[1][0]-self.bounding_box[0][0],
+                                                        self.bounding_box[1][1]-self.bounding_box[0][1]), 1)
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:

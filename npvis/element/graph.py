@@ -29,12 +29,29 @@ class Graph:
         self.edges = edges
         self.groups = groups
         self.bounding_box = bounding_box
+        self.original_bounding_box = bounding_box
         self.node_dict = None
         self._create_node_dictionary()
         self.node_radius = node_radius
 
     def set_bounding_box(self, bounding_box):
-        self.bounding_box = bounding_box
+        """
+        Sets the bounding box for the graph. Adjusts the given bounding box
+        by the node_radius so that when nodes are placed (by their center),
+        the entire node (circle) remains visible.
+        
+        Args:
+            bounding_box (np.array): 2x2 array of form [[x_min, y_min], [x_max, y_max]]
+        """
+        margin = self.node_radius
+        # Adjust bounding box so that node centers are confined within an area that
+        # leaves a margin of 'node_radius' on all sides.
+        adjusted_box = np.array([
+            [bounding_box[0][0] + margin, bounding_box[0][1] + margin],
+            [bounding_box[1][0] - margin, bounding_box[1][1] - margin]
+        ])
+        self.bounding_box = adjusted_box
+        self.original_bounding_box = bounding_box
 
     def print_display(self):
         print("Nodes:")
@@ -181,13 +198,30 @@ class Graph:
             text_surface = font.render(node.name, True, (255, 255, 255))
             text_rect = text_surface.get_rect(center=(int(node.location[0]), int(node.location[1])))
             screen.blit(text_surface, text_rect)
+            
+        # Debug bounding box
+        pygame.draw.rect(
+            screen,
+            (0, 0, 255),
+            pygame.Rect(
+            self.original_bounding_box[0][0],
+            self.original_bounding_box[0][1],
+            self.original_bounding_box[1][0] - self.original_bounding_box[0][0],
+            self.original_bounding_box[1][1] - self.original_bounding_box[0][1]
+            ),
+            width=1
+        )
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             pos = np.array(event.pos)
             # Check each node to see if the click falls within the node's circle.
             for node in self.nodes:
-                # Using Euclidean distance
-                if np.linalg.norm(pos - node.location) <= self.node_radius:
+                if is_inside_circle(pos, node.location, self.node_radius):
+                    node.change_color((255, 0, 0))  # Change color to red when clicked
                     print(f"Node {node.node_id} ({node.name}) was clicked at {event.pos}.")
                     # You can add more logic here, such as highlighting or callbacks.
+
+# Function to detect if a point is inside a circle
+def is_inside_circle(point, circle_center, radius):
+    return np.linalg.norm(point - circle_center) <= radius

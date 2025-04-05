@@ -38,4 +38,5 @@ class NPProblem:
                 h.change_color(self.colors[i%len(self.colors)])
         self.element.display(screen)
 
-
+    def handle_event(self, event):
+        self.element.handle_event(event)

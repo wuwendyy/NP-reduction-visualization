@@ -40,7 +40,13 @@ class GameManager:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-            # Additional event handling (e.g., keyboard input) can be added here.
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                for problem, bounding_box in self.problems:
+                    # If the mouse click is within the bounding box of the problem,
+                    # call the problem's handle_event method.
+                    if bounding_box[0, 0] < event.pos[0] < bounding_box[1, 0] and \
+                       bounding_box[0, 1] < event.pos[1] < bounding_box[1, 1]:
+                        problem.handle_event(event)
 
     def update_display(self):
         """
