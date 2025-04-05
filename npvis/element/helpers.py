@@ -10,6 +10,8 @@ class Node:
         self.selected = selected
         self.color = color
         self.location = location
+        self.default_color = color
+
 
     def change_color(self, new_color):
         self.color = new_color
@@ -34,6 +36,7 @@ class Edge:
         self.node2 = node2
         self.selected = selected
         self.color = color
+        self.default_color = color
 
 
 class SATSolution:
@@ -57,6 +60,7 @@ class Variable:
         self.clause_id = clause_id
         self.id = var_id
         self.color = color
+        self.default_color = color
 
     def change_color(self, new_color):
         self.color = new_color
