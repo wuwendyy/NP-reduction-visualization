@@ -1,4 +1,4 @@
-from npvis.element.element import Formula, Variable, Clause
+from npvis.element import Formula, Variable, Clause
 from npvis.problem.np_problem import NPProblem
 
 class ThreeSATProblem(NPProblem):

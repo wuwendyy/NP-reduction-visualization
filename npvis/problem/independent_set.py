@@ -1,4 +1,4 @@
-from npvis.element.element import Graph, Node, Edge
+from npvis.element import Graph, Node, Edge
 from npvis.problem.np_problem import NPProblem
 
 class IndependentSetProblem(NPProblem):

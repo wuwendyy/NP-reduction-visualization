@@ -1,5 +1,5 @@
 # This file contains the base class for np problems 
-from npvis.element.element import *
+from npvis.element import *
 
 class NPProblem:
     """

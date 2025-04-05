@@ -38,6 +38,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
         for c_idx, clause in enumerate(formula_list, start=1):
             self._debug_print(f"Processing Clause #{c_idx} with {len(clause.variables)} variable(s).")
             clause_nodes = []
+            clause_fs = set()  
 
             for literal in clause.variables:
                 clause_fs.add(literal)
