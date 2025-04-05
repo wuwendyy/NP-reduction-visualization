@@ -40,24 +40,31 @@ class ThreeSatToIndependentSetReduction(Reduction):
             clause_nodes = []
 
             for literal in clause.variables:
+                clause_fs.add(literal)
                 # Create a node for each literal occurrence
                 node = self.problem2.add_node(literal.name)
                 self.input1_to_input2_pairs[literal] = node
                 self.input2_to_input1_pairs[node] = literal
                 clause_nodes.append(node)
 
-                self._debug_print(f"  Created node '{node.node_id}' for literal {literal}.")
+                nodes_fs = frozenset({node})
+                literal_fs = frozenset({literal})
+                self.input1_to_input2_dict[literal_fs] = nodes_fs
+                self.input2_to_input1_dict[nodes_fs] = literal_fs
+
+                self._debug_print(f"  -- Added literal/node pair [{literal} : {node}] to inp1_to_inp2_dict")
+                self._debug_print(f"  Created node '{node.node_id}' of type '{node.name}' for literal {literal}.")
 
             # Group the clause's nodes
             self.problem2.add_group(clause_nodes)
 
-            # append to internal set:set mapping
-            nodes_set = frozenset(clause_nodes)
-            clause_set = frozenset({clause})
-            self.input1_to_input2_dict[clause_set] = nodes_set
-            # self.input2_to_input1_dict[nodes_set] = clause_set # is this needed?
-
             self._debug_print(f"  Added group for Clause #{c_idx}: node IDs {[n.node_id for n in clause_nodes]}.")
+
+            # add to internal dict (3 literals) : (3 nodes in IS graph)
+            # allows check that click all 3 literals will highlight 3 nodes in a triangle and vice versa
+            self.input1_to_input2_dict[frozenset(clause_fs)] = frozenset(clause_nodes)
+            self.input2_to_input1_dict[frozenset(clause_nodes)] = frozenset(clause_fs)
+            self._debug_print(f"  -- Added clause/triangle pair [{clause_fs} : {clause_nodes}] to inp1_to_inp2_dict")
 
             # Fully connect them
             for i in range(len(clause_nodes)):
@@ -65,11 +72,27 @@ class ThreeSatToIndependentSetReduction(Reduction):
                     self.problem2.add_edge(clause_nodes[i], clause_nodes[j])
             self._debug_print(f"  Fully connected the nodes within Clause #{c_idx}.")
 
+        name_literal_dict = {}
+        name_node_dict = {}
+
         # Connect complementary literal occurrences across clauses.
         self._debug_print("Connecting complementary literal occurrences across clauses.")
         items = list(self.input1_to_input2_pairs.items())
         for i in range(len(items)):
             literal_A, node_A = items[i]
+
+            # for appending to input1_to_input2_dict later
+            name = literal_A.name
+            if literal_A.is_negated:
+                name = literal_A.name + "_neg"
+                
+            if name in name_literal_dict:
+                name_literal_dict[name].add(literal_A)
+                name_node_dict[name].add(node_A)
+            else:
+                name_literal_dict[name] = {literal_A}
+                name_node_dict[name] = {node_A}
+            
             for j in range(i + 1, len(items)):
                 literal_B, node_B = items[j]
                 # If same var name but opposite negation, connect the nodes
@@ -80,6 +103,11 @@ class ThreeSatToIndependentSetReduction(Reduction):
                         f"via nodes {node_A.node_id} and {node_B.node_id}."
                     )
 
+        # finally append
+        for name, literals in name_literal_dict.items():
+            self.input1_to_input2_dict[frozenset(literals)] = name_node_dict[name]
+            self._debug_print(f"  -- Added same_name_literals/same_name_nodes pair [{literals} : {name_node_dict[name]}] to inp1_to_inp2_dict")
+        
         self._debug_print("Finished build_graph_from_formula.\n")
 
     def sol1tosol2(self, sat_assignment):
@@ -93,9 +121,11 @@ class ThreeSatToIndependentSetReduction(Reduction):
         for clause_idx, clause in enumerate(formula_list, start=1):
             chosen_node = None
             self._debug_print(f"  Evaluating Clause #{clause_idx}...")
+
             for literal in clause.variables:
+                # literal_set.add(literal)
                 node = self.input1_to_input2_pairs[literal]
-                var_id = literal.name        # The variable name/ID
+                var_id = literal.name  # The variable name/ID
                 is_negated = literal.is_negated
                 # for 1:TRUE, get TRUE when using 1 as key
                 assigned_value = sat_assignment[int(var_id)]
@@ -106,11 +136,12 @@ class ThreeSatToIndependentSetReduction(Reduction):
                     f"is_negated={is_negated}"
                 )
 
-                # If assignment matches the literal, pick this node
+                # If assignment matches the literal, add this node to the set
                 if assigned_value != is_negated:
                     chosen_node = node
                     self.output1_to_output2_pairs[literal] = node
-                    self._debug_print(f"    --> Literal {literal} is satisfied by assignment; picking node {node.node_id}.")
+                    self._debug_print(
+                        f"    --> Literal {literal} is satisfied by assignment; picking node {node.node_id}.")
                     break
 
             if chosen_node:
@@ -142,8 +173,8 @@ class ThreeSatToIndependentSetReduction(Reduction):
                 self.output2_to_output1_pairs[node] = literal  # Reverse mapping
 
                 # If already assigned, skip (to prevent overwriting)
-                if var not in sat_assignment: # not assigned a value yet
-                    sat_assignment[var] = not  is_negated
+                if var not in sat_assignment:  # not assigned a value yet
+                    sat_assignment[var] = not is_negated
                     self._debug_print(
                         f"  Selected node {node.node_id} => literal {literal}; "
                         f"assigning var {var} = {not is_negated}"
