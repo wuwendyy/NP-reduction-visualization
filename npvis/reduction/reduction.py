@@ -64,7 +64,7 @@ class Reduction:
         if len(clicked_set) != 0:
             # highlight the clicked set:
             for e in clicked_set:
-                e.change_color((0, 255, 0))
+                e.change_color((255, 0, 0))
                 self.highlighted.append(e)
             # CASE: one item in set 
             if len(clicked_set) == 1:
@@ -73,7 +73,7 @@ class Reduction:
                 if e1 in self.input1_to_input2_dict:
                     is_input1 = True
                     for e in self.input1_to_input2_dict[e1]:
-                        e.change_color((0, 255, 0))
+                        e.change_color((255, 0, 0))
                         self.highlighted.append(e)
             # CASE: not input 1
             if not is_input1:
@@ -84,7 +84,7 @@ class Reduction:
                         break
                 if matching_key:
                     # found input1
-                    matching_key.change_color((0, 255, 0))
+                    matching_key.change_color((255, 0, 0))
                     self.highlighted.append(matching_key)
 
     def reset_highlighted(self):

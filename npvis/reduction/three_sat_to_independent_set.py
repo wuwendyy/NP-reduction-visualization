@@ -50,7 +50,8 @@ class ThreeSatToIndependentSetReduction(Reduction):
 
                 nodes_fs = frozenset({node})
                 literal_fs = frozenset({literal})
-                self.input1_to_input2_dict[literal_fs] = nodes_fs
+                # self.input1_to_input2_dict[literal_fs] = nodes_fs // temp disabel
+                self.add_input1_to_input2_by_pair(literal, node)
                 self.input2_to_input1_dict[nodes_fs] = literal_fs
 
                 self._debug_print(f"  -- Added literal/node pair [{literal} : {node}] to inp1_to_inp2_dict")
@@ -63,7 +64,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
 
             # add to internal dict (3 literals) : (3 nodes in IS graph)
             # allows check that click all 3 literals will highlight 3 nodes in a triangle and vice versa
-            self.input1_to_input2_dict[frozenset(clause_fs)] = frozenset(clause_nodes)
+            # self.input1_to_input2_dict[frozenset(clause_fs)] = frozenset(clause_nodes)// temp disabel
             self.input2_to_input1_dict[frozenset(clause_nodes)] = frozenset(clause_fs)
             self._debug_print(f"  -- Added clause/triangle pair [{clause_fs} : {clause_nodes}] to inp1_to_inp2_dict")
 

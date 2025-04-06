@@ -37,6 +37,13 @@ class NPProblem:
             for h in set_solution:
                 h.change_color(self.colors[i%len(self.colors)])
         self.element.display(screen)
+    
+    def disable_solution(self):
+        # Assumes solutions can be formulated in a list of sets of helpers
+        for i in range(len(self.solution)):
+            set_solution = self.solution[i]
+            for h in set_solution:
+                h.change_color(h.default_color)
 
     def handle_event(self, event):
-        self.element.handle_event(event)
+        return self.element.handle_event(event)

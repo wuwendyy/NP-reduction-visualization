@@ -10,6 +10,8 @@ class GameManager:
         self.problems = []  # List of tuples: (problem_instance, bounding_box)
         self.running = False
         self.show_solution = False  # Flag to toggle solution display
+        self.clicked = set() # List of clicked sub-elements 
+        self.reduction = None
 
     def add_problem(self, problem, bounding_box):
         """
@@ -31,6 +33,9 @@ class GameManager:
 
         self.problems.append((problem, bounding_box))
 
+    def add_reduction(self, reduction):
+        self.reduction = reduction
+
     def clear_screen(self, color=(255, 255, 255)):
         self.screen.fill(color)
 
@@ -42,12 +47,26 @@ class GameManager:
                 if event.key == pygame.K_s:
                     # Toggle solution display when 's' is pressed
                     self.show_solution = not self.show_solution
+                    if not self.show_solution:
+                        for problem, _ in self.problems:
+                            problem.disable_solution()
+                        self.reduction.display_input_to_input(self.clicked)
+
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 for problem, bounding_box in self.problems:
                     # Check if the mouse click is within the problem's bounding box
                     if (bounding_box[0, 0] < event.pos[0] < bounding_box[1, 0] and 
                         bounding_box[0, 1] < event.pos[1] < bounding_box[1, 1]):
-                        problem.handle_event(event)
+                        sub_element = problem.handle_event(event)
+                        if sub_element is not False:
+                            # clicked something
+                            if sub_element in self.clicked:
+                                # unclick it 
+                                self.clicked.remove(sub_element)
+                            else:
+                                self.clicked.add(sub_element)
+                            if not self.show_solution:
+                                self.reduction.display_input_to_input(self.clicked)
 
     def update_display(self):
         for problem, _ in self.problems:

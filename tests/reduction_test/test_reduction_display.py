@@ -39,6 +39,7 @@ def main():
     print("Recovered SAT assignment:", recovered_assignment)
     print("Conversion to SAT Assignment completed!\n")
     
+    print("Input1 to Input 2: ", reduction.input1_to_input2_dict)
     # Define bounding boxes for both elements
     graph = ind_set_problem.get_graph()
     formula = three_sat_problem.get_formula()

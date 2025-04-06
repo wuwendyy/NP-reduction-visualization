@@ -49,6 +49,8 @@ def main():
     gm.add_problem(three_sat_problem, formula_bounding_box)
     gm.add_problem(ind_set_problem, graph_bounding_box)
 
+    gm.add_reduction(reduction)
+
     gm.run()
 
 if __name__ == "__main__":

@@ -220,9 +220,11 @@ class Graph:
             # Check each node to see if the click falls within the node's circle.
             for node in self.nodes:
                 if is_inside_circle(pos, node.location, self.node_radius):
-                    node.toggle_highlight()
+                    # node.toggle_highlight()
                     print(f"Node {node.node_id} ({node.name}) was clicked at {event.pos}.")
                     # You can add more logic here, such as highlighting or callbacks.
+                    return node
+        return False
 
 # Function to detect if a point is inside a circle
 def is_inside_circle(point, circle_center, radius):
