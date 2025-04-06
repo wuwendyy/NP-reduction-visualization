@@ -44,7 +44,7 @@ class Graph:
         Args:
             bounding_box (np.array): 2x2 array of form [[x_min, y_min], [x_max, y_max]]
         """
-        margin = self.node_radius
+        margin = self.node_radius + 5
         # Adjust bounding box so that node centers are confined within an area that
         # leaves a margin of 'node_radius' on all sides.
         adjusted_box = np.array([
@@ -203,7 +203,7 @@ class Graph:
         # Debug bounding box
         pygame.draw.rect(
             screen,
-            (0, 0, 255),
+            (0, 0, 0),
             pygame.Rect(
             self.original_bounding_box[0][0],
             self.original_bounding_box[0][1],
@@ -219,7 +219,7 @@ class Graph:
             # Check each node to see if the click falls within the node's circle.
             for node in self.nodes:
                 if is_inside_circle(pos, node.location, self.node_radius):
-                    node.change_color((255, 0, 0))  # Change color to red when clicked
+                    node.toggle_highlight()
                     print(f"Node {node.node_id} ({node.name}) was clicked at {event.pos}.")
                     # You can add more logic here, such as highlighting or callbacks.
 

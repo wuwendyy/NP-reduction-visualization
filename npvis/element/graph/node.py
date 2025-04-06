@@ -3,7 +3,7 @@ import numpy as np
 class Node:
     neighbors = []  # store all neighbor node_id
 
-    def __init__(self, node_id, name, selected="false", color=(0, 0, 255), location=np.array([0, 0])):
+    def __init__(self, node_id, name, selected="false", color=(173, 216, 230), location=np.array([0, 0])):
         self.node_id = node_id  # unique id
         self.name = name
         self.selected = selected
@@ -11,9 +11,14 @@ class Node:
         self.location = location
         self.default_color = color
 
-
     def change_color(self, new_color):
         self.color = new_color
+        
+    def toggle_highlight(self, highlight_color=(255, 192, 203)):
+        if self.color == self.default_color:
+            self.change_color(highlight_color)
+        else:
+            self.change_color(self.default_color)
 
     def add_neighbor(self, neighbor):
         self.neighbors.append(neighbor)
