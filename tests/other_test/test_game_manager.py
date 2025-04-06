@@ -25,7 +25,6 @@ def main():
 
     # 5) Example assignment
     sat_assignment = {1: True, 2: True, 3: False, 4: False}
-    three_sat_problem.set_solution(sat_assignment)
 
     # 6) Check solution
     satisfied, is_valid = reduction.test_solution(sat_assignment)
@@ -35,10 +34,12 @@ def main():
     # Convert solutions
     is_set = reduction.sol1tosol2(sat_assignment)
     print("Independent Set from SAT assignment:", is_set)
-    ind_set_problem.set_solution_by_id(is_set)
+    ind_set_problem.set_solution(is_set)
 
     recovered_assignment = reduction.sol2tosol1(is_set)
     print("Recovered SAT assignment:", recovered_assignment)
+    
+    three_sat_problem.set_solution(recovered_assignment)
 
     # Create GameManager instance
     gm = GameManager(width=800, height=600, fps=30)

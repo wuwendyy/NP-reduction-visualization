@@ -89,7 +89,18 @@ class IndependentSetProblem(NPProblem):
             else:
                 other_set.add(node)
         sol = [indepent_set, other_set]
-        self.set_solution(sol)
+        self.solution = sol
+    
+    def set_solution(self, solution):
+        indepent_set = set()
+        other_set = set()
+        for node in self.element.nodes:
+            if node in solution:
+                indepent_set.add(node)
+            else:
+                other_set.add(node)
+        sol = [indepent_set, other_set]
+        self.solution = sol
 
 
 
