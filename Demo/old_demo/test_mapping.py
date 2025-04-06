@@ -1,7 +1,6 @@
 import networkx as nx
 import itertools
 from npvis.element.element import Formula
-from npvis.element.helpers import Node, Edge
 from three_sat_reduction import ThreeSatToIndependentSetReduction
 
 def test_build_graph(test_formula):

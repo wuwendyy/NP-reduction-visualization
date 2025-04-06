@@ -1,6 +1,7 @@
 import pygame
 import numpy as np
-from npvis.element.helpers import Clause, Variable
+from npvis.element.clause import Clause
+from npvis.element.variable import Variable
 from npvis.element.element import Element
 
 class Formula(Element):

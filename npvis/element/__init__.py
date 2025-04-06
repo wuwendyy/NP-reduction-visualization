@@ -1,3 +1,6 @@
 from .graph import Graph
 from .formular import Formula
-from .helpers import Node, Edge, Variable, Clause
+from .node import Node
+from .edge import Edge
+from .variable import Variable
+from .clause import Clause

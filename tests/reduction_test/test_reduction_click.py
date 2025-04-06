@@ -4,7 +4,7 @@ import numpy as np
 
 from npvis.problem import ThreeSATProblem, IndependentSetProblem
 from npvis.reduction.reduction import Reduction
-from npvis.element.helpers import Variable, Node
+from npvis.element import Variable, Node
 
 class TestInputMethods(unittest.TestCase):
     def setUp(self):

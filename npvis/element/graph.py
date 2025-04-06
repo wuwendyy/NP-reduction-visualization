@@ -3,7 +3,10 @@ import pygame
 import numpy as np
 import networkx as nx
 from abc import abstractmethod
-from npvis.element.helpers import Node, Edge, Clause, Variable
+from npvis.element.node import Node
+from npvis.element.edge import Edge
+from npvis.element.clause import Clause
+from npvis.element.variable import Variable
 from npvis.element.graph_drawing_utils import (
     has_overlapping_edge,
     draw_bezier_curve,
