@@ -43,7 +43,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
             for literal in clause.variables:
                 clause_fs.add(literal)
                 # Create a node for each literal occurrence
-                node = self.problem2.add_node(literal.name)
+                node = self.problem2.add_node(repr(literal))
                 self.input1_to_input2_pairs[literal] = node
                 self.input2_to_input1_pairs[node] = literal
                 clause_nodes.append(node)
