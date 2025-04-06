@@ -1,5 +1,7 @@
+from npvis.element.color import LIGHTGREY
+
 class Edge:
-    def __init__(self, node1, node2, selected="false", color=(211, 211, 211)):
+    def __init__(self, node1, node2, selected="false", color=LIGHTGREY):
         self.node1 = node1
         self.node2 = node2
         self.selected = selected

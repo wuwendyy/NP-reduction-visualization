@@ -3,17 +3,26 @@ import numpy as np
 from npvis.element.formular.clause import Clause
 from npvis.element.formular.variable import Variable
 from npvis.element.element import Element
+from npvis.element.color import LIGHTGREY
 
 class Formula(Element):
     def __init__(self, bounding_box=np.array([[50, 50], [550, 550]])):
         self.clauses = []
         self.bounding_box = bounding_box
+        self.original_bounding_box = bounding_box
         self.font = None
         self.literal_rects = {}  # Mapping: (clause_index, literal_index) -> pygame.Rect
-        self.DEBUG = True
 
     def set_bounding_box(self, bounding_box):
-        self.bounding_box = bounding_box
+        margin = 10
+        # Adjust bounding box so that node centers are confined within an area that
+        # leaves a margin of 'node_radius' on all sides.
+        adjusted_box = np.array([
+            [bounding_box[0][0] + margin, bounding_box[0][1] + margin],
+            [bounding_box[1][0] - margin, bounding_box[1][1] - margin]
+        ])
+        self.bounding_box = adjusted_box
+        self.original_bounding_box = bounding_box
 
     def parse(self, filename):
         """
@@ -87,77 +96,67 @@ class Formula(Element):
 
     def display(self, screen):
         if self.font is None:
-            self.font = pygame.font.Font(None, 24)
+            self.font = pygame.font.Font(None, 30)
+        self.literal_rects.clear()
 
         x, y = self.bounding_box[0]
-        max_width = self.bounding_box[1][0] - x
-        max_height = self.bounding_box[1][1] - y
-        line_height = 30  # Height per line
+        line_height = 30
+        current_x = x
         current_y = y
-        default_color = (0, 0, 0)
 
-        for c, clause in enumerate(self.clauses):
-            or_surface = self.font.render("(", True, default_color)
-            screen.blit(or_surface, (x, y))
-            x += or_surface.get_width()
-            for i, var in enumerate(clause.variables):
-                # Render variable with its own color (assumes var.color is an (R,G,B) tuple)
-                var_surface = self.font.render(str(var), True, var.color)
-                screen.blit(var_surface, (x, y))
-                word_width = var_surface.get_width()
-                x += word_width
-                # Add " OR " if not the last variable
-                if i < len(clause.variables) - 1:
-                    or_surface = self.font.render(" OR ", True, default_color)
-                    screen.blit(or_surface, (x, y))
-                    word_width = or_surface.get_width()
-                elif c < len(self.clauses) - 1:
-                    or_surface = self.font.render(") AND ", True, default_color)
-                    screen.blit(or_surface, (x, y))
-                    word_width = or_surface.get_width()
-                else:
-                    or_surface = self.font.render(")", True, default_color)
-                    screen.blit(or_surface, (x, y))
-                    word_width = or_surface.get_width()
+        # For each clause, render its literals and store their bounding rects.
+        for c_idx, clause in enumerate(self.clauses):
+            # Render opening parenthesis
+            open_paren = self.font.render("(", True, LIGHTGREY)
+            open_rect = open_paren.get_rect(topleft=(current_x, current_y))
+            screen.blit(open_paren, open_rect)
+            current_x += open_rect.width
 
-                x += word_width
-                # If the word doesn't fit in the current line, move to the next line
-                if x > self.bounding_box[1][0]:
-                    x = self.bounding_box[0][0]
-                    y += line_height
-                    
-            # temp_surface = screen.font.render(current_line + (" AND " if current_line else "") + clause, True, (0, 0, 0))
-            # temp_width = temp_surface.get_width()
+            for l_idx, var in enumerate(clause.variables):
+                # Render the variable using its current color.
+                lit_surface = self.font.render(str(var), True, var.color)
+                lit_rect = lit_surface.get_rect(topleft=(current_x, current_y))
+                screen.blit(lit_surface, lit_rect)
+                # Store the bounding rectangle for later click detection.
+                self.literal_rects[(c_idx, l_idx)] = lit_rect
+                current_x += lit_rect.width
 
-        #     if x > max_width:
-        #         if not current_line:
-        #             raise ValueError(f"Clause '{clause}' is too wide to fit in bounding box.")
+                # Add " OR " if not the last literal in the clause.
+                if l_idx < len(clause.variables) - 1:
+                    or_surface = self.font.render(" OR ", True, LIGHTGREY)
+                    or_rect = or_surface.get_rect(topleft=(current_x, current_y))
+                    screen.blit(or_surface, or_rect)
+                    current_x += or_rect.width
 
-        #         text_lines.append(current_line)
-        #         current_line = clause
-        #     else:
-        #         current_line += (" AND " if current_line else "") + clause
+            # Render closing parenthesis.
+            closing = ")" if c_idx == len(self.clauses) - 1 else ") AND "
+            close_surface = self.font.render(closing, True, LIGHTGREY)
+            close_rect = close_surface.get_rect(topleft=(current_x, current_y))
+            screen.blit(close_surface, close_rect)
+            current_x = self.bounding_box[0][0]  # Reset x for next line.
+            current_y += line_height
 
-        # if current_line:
-        #     text_lines.append(current_line)
-
-        # if len(text_lines) * line_height > max_height:
-        #     raise ValueError("Not enough space to display all clauses within the bounding box.")
-
-        # for i, line in enumerate(text_lines):
-        #     text_surface = self.font.render(line, True, (0, 0, 0))
-        #     screen.blit(text_surface, (x, current_y + i * line_height))
-        
         # Debug bounding box
-        pygame.draw.rect(screen, (0, 0, 255), pygame.Rect(self.bounding_box[0][0], self.bounding_box[0][1],
-                                                        self.bounding_box[1][0]-self.bounding_box[0][0],
-                                                        self.bounding_box[1][1]-self.bounding_box[0][1]), 1)
+        pygame.draw.rect(
+            screen,
+            LIGHTGREY,
+            pygame.Rect(
+            self.original_bounding_box[0][0],
+            self.original_bounding_box[0][1],
+            self.original_bounding_box[1][0] - self.original_bounding_box[0][0],
+            self.original_bounding_box[1][1] - self.original_bounding_box[0][1]
+            ),
+            width=1
+        )
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             pos = event.pos
-            # Check if click falls within any literal's rectangle
+            # Check if the click falls within any literal's bounding rect.
             for key, rect in self.literal_rects.items():
                 if rect.collidepoint(pos):
-                    print(f"Literal in clause {key[0]}, index {key[1]} was clicked at {pos}.")
-                    # Add additional handling here (e.g., highlighting the literal)
+                    clause_idx, literal_idx = key
+                    variable = self.clauses[clause_idx].variables[literal_idx]
+                    variable.toggle_highlight()  # Toggle its highlight color.
+                    print(f"Variable {variable} in clause {clause_idx} clicked at {pos}.")
+    

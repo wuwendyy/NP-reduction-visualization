@@ -1,9 +1,10 @@
 import numpy as np
+from npvis.element.color import LIGHTBLUE, LIGHTPINK
 
 class Node:
     neighbors = []  # store all neighbor node_id
 
-    def __init__(self, node_id, name, selected="false", color=(173, 216, 230), location=np.array([0, 0])):
+    def __init__(self, node_id, name, selected="false", color=LIGHTBLUE, location=np.array([0, 0])):
         self.node_id = node_id  # unique id
         self.name = name
         self.selected = selected
@@ -14,7 +15,7 @@ class Node:
     def change_color(self, new_color):
         self.color = new_color
         
-    def toggle_highlight(self, highlight_color=(255, 192, 203)):
+    def toggle_highlight(self, highlight_color=LIGHTPINK):
         if self.color == self.default_color:
             self.change_color(highlight_color)
         else:

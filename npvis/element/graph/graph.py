@@ -11,6 +11,7 @@ from npvis.element.graph.graph_drawing_utils import (
     draw_thick_bezier_curve,
     find_best_control_point
 )
+from npvis.element.color import LIGHTGREY
 
 class Graph:
     name_dict = dict()  # stores name: node
@@ -203,7 +204,7 @@ class Graph:
         # Debug bounding box
         pygame.draw.rect(
             screen,
-            (0, 0, 0),
+            LIGHTGREY,
             pygame.Rect(
             self.original_bounding_box[0][0],
             self.original_bounding_box[0][1],
