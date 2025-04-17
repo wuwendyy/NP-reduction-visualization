@@ -1,7 +1,7 @@
 import pygame
 import numpy as np
-from npvis.element.formular.clause import Clause
-from npvis.element.formular.variable import Variable
+from npvis.element.formula.clause import Clause
+from npvis.element.formula.variable import Variable
 from npvis.element.element import Element
 from npvis.element.color import LIGHTGREY
 
