@@ -37,7 +37,7 @@ def test_reduction_forward(clauses):
         satisfied = three_sat_problem.evaluate(assignment)
         if satisfied:
             # If satisfied => the set must be independent
-            node_set = reduction.sol1tosol2(assignment)
+            node_set = reduction.solution1_to_solution2(assignment)
             is_indep = ind_set_problem.is_independent_set(node_set)
             if not is_indep:
                 mismatch_count += 1
@@ -89,7 +89,7 @@ def test_reduction_reverse(clauses):
         # Check independence
         if ind_set_problem.is_independent_set(subset_set):
             # Then the recovered assignment must satisfy the formula
-            assignment = reduction.sol2tosol1(subset_set)
+            assignment = reduction.solution2_to_solution1(subset_set)
             satisfied = three_sat_problem.evaluate(assignment)
             if not satisfied:
                 mismatch_count += 1

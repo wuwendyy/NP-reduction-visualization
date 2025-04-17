@@ -12,7 +12,7 @@ def test_single_clause():
     print("\n[TEST] Single Clause")
     problem = ThreeSATProblem()
     problem.load_formula([
-        [(1, False), (2, True)]
+        [(1, True), (2, False)]
     ])
 
     # Evaluate some assignments
@@ -39,8 +39,8 @@ def test_multi_clause():
     print("\n[TEST] Multiple Clauses")
     problem = ThreeSATProblem()
     problem.load_formula([
-        [(1, False), (2, True), (3, True)],  # (¬x1 ∨ x2 ∨ x3)
-        [(1, True), (2, False), (3, True)]   # (x1 ∨ ¬x2 ∨ x3)
+        [(1, True), (2, False), (3, False)],  # (¬x1 ∨ x2 ∨ x3)
+        [(1, False), (2, True), (3, False)]   # (x1 ∨ ¬x2 ∨ x3)
     ])
 
     # Evaluate some assignments

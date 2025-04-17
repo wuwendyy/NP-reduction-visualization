@@ -5,15 +5,18 @@ import networkx as nx
 from abc import abstractmethod
 from npvis.element.graph.node import Node
 from npvis.element.graph.edge import Edge
+from npvis.element.element import Element
 from npvis.element.graph.graph_drawing_utils import (
     has_overlapping_edge,
     draw_bezier_curve,
     draw_thick_bezier_curve,
-    find_best_control_point
+    find_best_control_point,
+    is_inside_circle
 )
 from npvis.element.color import LIGHTGREY
 
-class Graph:
+
+class Graph(Element):
     name_dict = dict()  # stores name: node
     groups = []
     '''
@@ -104,7 +107,7 @@ class Graph:
 
     def add_edge(self, edge):
         self.edges.add(edge)
-        
+
     def hasEdge(self, node1, node2):
         return any(
             (edge.node1 == node1 and edge.node2 == node2) or
@@ -140,7 +143,7 @@ class Graph:
         angle_radians = np.radians(angle_degrees)
         rotation_matrix = np.array([
             [np.cos(angle_radians), -np.sin(angle_radians)],
-            [np.sin(angle_radians),  np.cos(angle_radians)]
+            [np.sin(angle_radians), np.cos(angle_radians)]
         ])
         return rotation_matrix @ vector
 
@@ -192,7 +195,7 @@ class Graph:
                 draw_thick_bezier_curve(screen, start_pos, control_point, end_pos, edge.color, width=1)
             else:
                 pygame.draw.line(screen, edge.color, start_pos.astype(int), end_pos.astype(int), 3)
-        
+
         # Draw nodes
         for node in self.nodes:
             pygame.draw.circle(screen, node.color, node.location.astype(int), self.node_radius)
@@ -200,16 +203,16 @@ class Graph:
             text_surface = font.render(node.name, True, (255, 255, 255))
             text_rect = text_surface.get_rect(center=(int(node.location[0]), int(node.location[1])))
             screen.blit(text_surface, text_rect)
-            
+
         # Debug bounding box
         pygame.draw.rect(
             screen,
             LIGHTGREY,
             pygame.Rect(
-            self.original_bounding_box[0][0],
-            self.original_bounding_box[0][1],
-            self.original_bounding_box[1][0] - self.original_bounding_box[0][0],
-            self.original_bounding_box[1][1] - self.original_bounding_box[0][1]
+                self.original_bounding_box[0][0],
+                self.original_bounding_box[0][1],
+                self.original_bounding_box[1][0] - self.original_bounding_box[0][0],
+                self.original_bounding_box[1][1] - self.original_bounding_box[0][1]
             ),
             width=1
         )
@@ -225,7 +228,3 @@ class Graph:
                     # You can add more logic here, such as highlighting or callbacks.
                     return node
         return False
-
-# Function to detect if a point is inside a circle
-def is_inside_circle(point, circle_center, radius):
-    return np.linalg.norm(point - circle_center) <= radius

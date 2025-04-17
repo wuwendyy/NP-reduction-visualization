@@ -148,3 +148,8 @@ def is_point_near_line(point, line_start, line_end, threshold):
     # Calculate distance from node to the closest point on the edge
     distance = np.linalg.norm(point - projected_point)
     return distance < threshold
+
+
+# Function to detect if a point is inside a circle
+def is_inside_circle(point, circle_center, radius):
+    return np.linalg.norm(point - circle_center) <= radius

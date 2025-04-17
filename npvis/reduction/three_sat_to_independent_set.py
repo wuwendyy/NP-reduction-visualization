@@ -112,7 +112,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
         
         self._debug_print("Finished build_graph_from_formula.\n")
 
-    def sol1tosol2(self, sat_assignment):
+    def solution1_to_solution2(self, sat_assignment):
         """
         Convert a SAT assignment (dict var->bool) to an Independent Set.
         """
@@ -156,7 +156,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
         return independent_set
 
     # def sol2tosol1(self, independent_set):
-    def sol2tosol1(self, independent_set):
+    def solution2_to_solution1(self, independent_set):
         """
         Convert an Independent Set (set of node_ids) back to a SAT assignment.
         """
@@ -205,7 +205,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
         satisfied = self.problem1.evaluate(sat_assignment)
         self._debug_print(f"  Is formula satisfied? {satisfied}")
 
-        chosen = self.sol1tosol2(sat_assignment)
+        chosen = self.solution1_to_solution2(sat_assignment)
         valid_independent = self.problem2.is_independent_set(chosen)
         self._debug_print(f"  Is chosen set a valid independent set? {valid_independent}")
         self._debug_print("Finished test_solution.\n")

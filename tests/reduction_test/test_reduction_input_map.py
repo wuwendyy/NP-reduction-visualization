@@ -32,10 +32,10 @@ def main():
     sat_assignment = {1: True, 2: True, 3: False, 4: False}
 
     # 6) # Convert solutions
-    is_set = reduction.sol1tosol2(sat_assignment)
+    is_set = reduction.solution1_to_solution2(sat_assignment)
     print("Independent Set from SAT assignment:", is_set)
 
-    recovered_assignment = reduction.sol2tosol1(is_set)
+    recovered_assignment = reduction.solution2_to_solution1(is_set)
     print("Recovered SAT assignment:", recovered_assignment)
     print("Conversion to SAT Assignment completed!\n")
 

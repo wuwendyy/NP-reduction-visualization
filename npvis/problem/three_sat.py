@@ -89,6 +89,7 @@ class ThreeSATProblem(NPProblem):
         """
         result = False
         for var in clause_obj.variables:
+            # print(f"testing {var.name}, negated = {var.is_negated}")
             # assignment.get(...) defaults to False if variable not in assignment
             if assignment.get(var.name, False) != var.is_negated:
                 result = True
