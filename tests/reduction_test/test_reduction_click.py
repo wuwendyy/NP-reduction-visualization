@@ -61,7 +61,7 @@ class TestInputMethods(unittest.TestCase):
 
         # Test with one element in p2
         self.obj.display_input_to_input({input2})
-        self.assertNotIn(input1, self.obj.highlighted)  # input1 should not be highlighted
+        self.assertIn(input1, self.obj.highlighted)  # input1 should be highlighted
         self.assertIn(input2, self.obj.highlighted)  # input2 should be highlighted
         self.assertNotIn(input3, self.obj.highlighted)
 

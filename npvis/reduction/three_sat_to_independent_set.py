@@ -48,11 +48,11 @@ class ThreeSatToIndependentSetReduction(Reduction):
                 self.input2_to_input1_pairs[node] = literal
                 clause_nodes.append(node)
 
-                nodes_fs = frozenset({node})
-                literal_fs = frozenset({literal})
+                # nodes_fs = frozenset({node})
+                # literal_fs = frozenset({literal})
                 # self.input1_to_input2_dict[literal_fs] = nodes_fs // temp disabel
-                self.add_input1_to_input2_by_pair(literal, node)
-                self.input2_to_input1_dict[nodes_fs] = literal_fs
+                self.add_input1_to_input2_by_pair(literal, node) # just use this
+                # self.input2_to_input1_dict[nodes_fs] = literal_fs
 
                 self._debug_print(f"  -- Added literal/node pair [{literal} : {node}] to inp1_to_inp2_dict")
                 self._debug_print(f"  Created node '{node.node_id}' of type '{node.name}' for literal {literal}.")
@@ -65,7 +65,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
             # add to internal dict (3 literals) : (3 nodes in IS graph)
             # allows check that click all 3 literals will highlight 3 nodes in a triangle and vice versa
             # self.input1_to_input2_dict[frozenset(clause_fs)] = frozenset(clause_nodes)// temp disabel
-            self.input2_to_input1_dict[frozenset(clause_nodes)] = frozenset(clause_fs)
+            # self.input2_to_input1_dict[frozenset(clause_nodes)] = frozenset(clause_fs)
             self._debug_print(f"  -- Added clause/triangle pair [{clause_fs} : {clause_nodes}] to inp1_to_inp2_dict")
 
             # Fully connect them
@@ -107,7 +107,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
 
         # finally append
         for name, literals in name_literal_dict.items():
-            self.input1_to_input2_dict[frozenset(literals)] = name_node_dict[name]
+            # self.input1_to_input2_dict[frozenset(literals)] = name_node_dict[name]
             self._debug_print(f"  -- Added same_name_literals/same_name_nodes pair [{literals} : {name_node_dict[name]}] to inp1_to_inp2_dict")
         
         self._debug_print("Finished build_graph_from_formula.\n")

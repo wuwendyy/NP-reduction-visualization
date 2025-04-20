@@ -1,3 +1,4 @@
+from npvis.element.color import lighten_rgb
 class Reduction:
 
     def __init__(self, problem1, problem2):
@@ -77,15 +78,17 @@ class Reduction:
                         self.highlighted.append(e)
             # CASE: not input 1
             if not is_input1:
-                matching_key = False
                 for key, value in self.input1_to_input2_dict.items():
-                    if value == clicked_set:
-                        matching_key = key
-                        break
-                if matching_key:
-                    # found input1
-                    matching_key.change_color((255, 0, 0))
-                    self.highlighted.append(matching_key)
+                    print(f"clicked set: {clicked_set}")
+                    print(f"input 1 set: {value}")
+                    if clicked_set <= value: # clicked set is a subset 
+                        print("find input 1")
+                        # found input1
+                        lighter_color = lighten_rgb((255, 0, 0), (1-len(clicked_set) / len(value)))
+                        key.change_color(lighter_color)
+                        self.highlighted.append(key)
+                            
+
 
     def reset_highlighted(self):
         for e in self.highlighted:
