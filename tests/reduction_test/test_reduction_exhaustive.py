@@ -77,7 +77,7 @@ def test_reduction_reverse(clauses):
         return
 
     # Gather node IDs from the built graph
-    node_ids = [n.node_id for n in ind_set_problem.get_graph().nodes]
+    node_ids = [n.id for n in ind_set_problem.get_graph().nodes]
     node_ids.sort()
 
     mismatch_count = 0

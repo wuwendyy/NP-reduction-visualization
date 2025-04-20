@@ -14,7 +14,7 @@ if __name__ == "__main__":
 
     # Create nodes
     for i in range(node_count):
-        node = Node(node_id=i, name=f"{i}")
+        node = Node(id=i, name=f"X{i}")
         nodes.add(node)
 
     edges = set()
@@ -26,7 +26,7 @@ if __name__ == "__main__":
         for j in range(i + 1, node_count):
             n = random.random()
             if n > 0.5:
-                edges.add(Edge(node_list[i], node_list[j]))
+                edges.add(Edge(i, node_list[i], node_list[j]))
 
     # Initialize and display the graph with bounding box and node radius
     graph = Graph(nodes=nodes, edges=edges, groups=groups, node_radius=20)

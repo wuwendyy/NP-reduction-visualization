@@ -21,11 +21,11 @@ def test_simple_graph():
     problem.add_edge(B, C)
 
     # {A, C} is an independent set => True
-    test_set = {A.node_id, C.node_id}
+    test_set = {A.id, C.id}
     assert problem.is_independent_set(test_set) is True, "A,C should be independent"
 
     # {A, B} is not independent => there's an edge
-    test_set2 = {A.node_id, B.node_id}
+    test_set2 = {A.id, B.id}
     assert problem.is_independent_set(test_set2) is False, "A,B share an edge => not independent"
 
     print("Simple graph test passed!")

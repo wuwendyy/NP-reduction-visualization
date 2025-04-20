@@ -111,19 +111,19 @@ class ThreeSatToIndependentSetReduction:
         pygame.display.set_caption("Independent Set Graph")
         clock = pygame.time.Clock()
         running = True
-        pos = {node.node_id: (math.cos(i) * 200 + WIDTH // 2, math.sin(i) * 200 + HEIGHT // 2) for i, node in enumerate(self.graph.nodes)}
+        pos = {node.id: (math.cos(i) * 200 + WIDTH // 2, math.sin(i) * 200 + HEIGHT // 2) for i, node in enumerate(self.graph.nodes)}
         
         while running:
             screen.fill(BACKGROUND_COLOR)
             
             for edge in self.graph.edges:
-                pygame.draw.line(screen, EDGE_COLOR, pos[edge.node1.node_id], pos[edge.node2.node_id], 2)
+                pygame.draw.line(screen, EDGE_COLOR, pos[edge.node1.id], pos[edge.node2.id], 2)
             
             for node in self.graph.nodes:
-                pygame.draw.circle(screen, NODE_COLOR, pos[node.node_id], RADIUS)
+                pygame.draw.circle(screen, NODE_COLOR, pos[node.id], RADIUS)
                 font = pygame.font.SysFont(None, 24)
-                text_surface = font.render(str(node.node_id), True, LABEL_COLOR)
-                text_rect = text_surface.get_rect(center=pos[node.node_id])
+                text_surface = font.render(str(node.id), True, LABEL_COLOR)
+                text_rect = text_surface.get_rect(center=pos[node.id])
                 screen.blit(text_surface, text_rect)
             
             pygame.display.flip()
@@ -149,7 +149,7 @@ if __name__ == "__main__":
     # Example SAT assignment: {1: True, 2: False, 3: True, 4: False}
     sat_assignment = {1: True, 2: False, 3: True, 4: False}
     independent_set = reduction.sol1tosol2(sat_assignment)
-    print("Independent Set Solution:", [node.node_id for node in independent_set])
+    print("Independent Set Solution:", [node.id for node in independent_set])
     
     # Convert back to SAT assignment
     reconstructed_assignment = reduction.sol2tosol1(independent_set)

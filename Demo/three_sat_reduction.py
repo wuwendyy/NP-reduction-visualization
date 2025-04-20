@@ -193,9 +193,9 @@ class ThreeSatToIndependentSetReduction(Reduction):
                     # node = self.input1_to_input2_pairs.get((literal, c_idx))  # Correct lookup
                     node = self.input1_to_input2_pairs[literal]
                     if node:
-                        independent_set.add(node.node_id)
+                        independent_set.add(node.id)
                         self.output1_to_output2_pairs[literal] = node
-                        print(f"  Node {node.node_id} (Literal {literal} in Clause {c_idx}) added to Independent Set")
+                        print(f"  Node {node.id} (Literal {literal} in Clause {c_idx}) added to Independent Set")
 
         print(f"\nIndependent Set Solution: {sorted(independent_set)}\n")
         print("Conversion to Independent Set completed!\n")
@@ -223,7 +223,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
         # Assign values based on selected nodes in the independent set
         for literal, node in self.input1_to_input2_pairs.items():
             clause_idx = literal.clause_id
-            if node.node_id in independent_set:
+            if node.id in independent_set:
                 var = literal.name
                 is_not_negated = literal.is_not_negated
                 clause_id = literal.clause_id
@@ -233,7 +233,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
 
                 self.output2_to_output1_pairs[node] = literal  # Reverse mapping
 
-                print(f"  Node {node.node_id} corresponds to Literal {literal} in Clause {clause_idx}")
+                print(f"  Node {node.id} corresponds to Literal {literal} in Clause {clause_idx}")
                 print(f"    Assigning Variable x{var} -> {sat_assignment[var]}\n")
 
         # Ensure all variables in the formula are assigned a value

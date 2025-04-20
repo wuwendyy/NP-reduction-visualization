@@ -122,7 +122,7 @@ if __name__ == "__main__":
     print("\nGraph Nodes (Detailed Info):")
     for node in graph.nodes:
         node_info = {
-            "ID": node.node_id,
+            "ID": node.id,
             "Literal": node.name,
             "Color": node.color,
             "Location": node.location.tolist(),  # Convert numpy array to list

@@ -61,14 +61,14 @@ class Graph(Element):
     def print_display(self):
         print("Nodes:")
         for node in self.nodes:
-            print(f"{node.node_id}, ", end="")
+            print(f"{node.id}, ", end="")
         print("\nEdges:")
         for edge in self.edges:
-            print(f"({edge.node1.node_id}, {edge.node2.node_id}), ", end="")
+            print(f"({edge.node1.id}, {edge.node2.id}), ", end="")
         print("\nGroups:")
         for group in self.groups:
             for node in group:
-                print(f"{node.node_id}, ", end="")
+                print(f"{node.id}, ", end="")
             print()
 
     def parse(self, filename):
@@ -79,7 +79,7 @@ class Graph(Element):
         self.edges = []
         self.groups = []
         with open(filename, "r") as file:
-            counter = 0
+            node_counter = 0
             for line in file:
                 line = line.strip()
                 if line[0] == '(':  # edge
@@ -88,8 +88,8 @@ class Graph(Element):
                     node2 = self.name_dict.get(names[1])
                     e = Edge(node1, node2)
                     self.edges.append(e)
-                    node1.add_neighbor(node2.node_id)
-                    node2.add_neighbor(node1.node_id)
+                    node1.add_neighbor(node2.id)
+                    node2.add_neighbor(node1.id)
                 elif line[0] == '[':  # group
                     names = line[1:-1].split(", ")
                     group = []
@@ -97,8 +97,8 @@ class Graph(Element):
                         group.append(self.name_dict.get(name))
                     self.groups.append(group)
                 else:  # node
-                    n = Node(counter, line)
-                    counter += 1
+                    n = Node(node_counter, line)
+                    node_counter += 1
                     self.nodes.append(n)
                     self.name_dict[line] = n
 
@@ -125,7 +125,7 @@ class Graph(Element):
         Returns:
             Node object if found, else None.
         """
-        return next((node for node in self.nodes if node.node_id == node_id), None)
+        return next((node for node in self.nodes if node.id == node_id), None)
 
     def determine_node_positions(self):
         if len(self.groups) != 0:
@@ -137,7 +137,7 @@ class Graph(Element):
         return
 
     def _create_node_dictionary(self):
-        self.node_dict = {node.node_id: node for node in self.nodes}
+        self.node_dict = {node.id: node for node in self.nodes}
 
     def _rotate_vector_np(self, vector, angle_degrees):
         angle_radians = np.radians(angle_degrees)
@@ -176,13 +176,13 @@ class Graph(Element):
         g = nx.Graph()
         g.add_nodes_from(self.node_dict.keys())
         for edge in self.edges:
-            g.add_edge(edge.node1.node_id, edge.node2.node_id)
+            g.add_edge(edge.node1.id, edge.node2.id)
         node_pos = nx.arf_layout(g)
         bounding_box_dim = self.bounding_box[1, :] - self.bounding_box[0, :]
         bounding_box_center = 0.5 * (self.bounding_box[0] + self.bounding_box[1])
         node_pos = nx.rescale_layout_dict(node_pos, 1)
         for node in self.nodes:
-            node.location = node_pos[node.node_id] * (bounding_box_dim / 2)
+            node.location = node_pos[node.id] * (bounding_box_dim / 2)
             node.location = np.add(node.location, bounding_box_center)
 
     def display(self, screen):
@@ -224,7 +224,7 @@ class Graph(Element):
             for node in self.nodes:
                 if is_inside_circle(pos, node.location, self.node_radius):
                     # node.toggle_highlight()
-                    print(f"Node {node.node_id} ({node.name}) was clicked at {event.pos}.")
+                    print(f"Node {node.id} ({node.name}) was clicked at {event.pos}.")
                     # You can add more logic here, such as highlighting or callbacks.
                     return node
         return False

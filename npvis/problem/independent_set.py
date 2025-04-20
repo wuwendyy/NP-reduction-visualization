@@ -83,7 +83,7 @@ class IndependentSetProblem(NPProblem):
         indepent_set = set()
         other_set = set()
         for node in self.element.nodes:
-            node_id = node.node_id
+            node_id = node.id
             if node_id in solution:
                 indepent_set.add(node)
             else:
@@ -113,5 +113,5 @@ if __name__ == "__main__":
     ind_set_problem.add_edge(n1, n2)
     ind_set_problem.add_edge(n2, n3)
 
-    test_set = {n1.node_id, n3.node_id}
+    test_set = {n1.id, n3.id}
     print("Is it independent?", ind_set_problem.is_independent_set(test_set))  # Expect True

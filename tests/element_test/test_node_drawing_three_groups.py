@@ -14,7 +14,7 @@ if __name__ == "__main__":
 
     # Create nodes
     for i in range(node_count):
-        node = Node(node_id=i, name=f"{i}")
+        node = Node(id=i, name=f"{i}")
         nodes.add(node)
 
     # Create edges to form 3-membered fully connected groups

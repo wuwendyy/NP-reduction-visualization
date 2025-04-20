@@ -17,7 +17,7 @@ nodes = set()
 node_count = 9
 node_list = []
 for i in range(node_count):
-    node = Node(node_id=i, name=f"{i}")
+    node = Node(id=i, name=f"{i}")
     nodes.add(node)
     node_list.append(node)
 

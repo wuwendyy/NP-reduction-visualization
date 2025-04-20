@@ -43,14 +43,14 @@ class ThreeColoringProblem(NPProblem):
         allowed color index (0,1,2) or directly a color tuple.
         """
         for node in self.element.nodes:
-            if node.node_id in color_assignment:
-                val = color_assignment[node.node_id]
+            if node.id in color_assignment:
+                val = color_assignment[node.id]
                 if isinstance(val, int):
                     node.color = self.allowed_colors[val % len(self.allowed_colors)]
-                    self.coloring[node.node_id] = node.color
+                    self.coloring[node.id] = node.color
                 elif isinstance(val, (tuple, list)) and len(val) == 3:
                     node.color = tuple(val)
-                    self.coloring[node.node_id] = node.color
+                    self.coloring[node.id] = node.color
 
     def reset_coloring(self):
         """
@@ -97,8 +97,8 @@ class ThreeColoringProblem(NPProblem):
                     current_idx = self.allowed_colors.index(current_color)
                     new_idx = (current_idx + 1) % len(self.allowed_colors)
                     node.color = self.allowed_colors[new_idx]
-                    self.coloring[node.node_id] = node.color
-                    print(f"Node {node.node_id} ({node.name}) color changed to {node.color}")
+                    self.coloring[node.id] = node.color
+                    print(f"Node {node.id} ({node.name}) color changed to {node.color}")
 
     def display_solution(self, screen):
         """
