@@ -31,7 +31,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
     def build_graph_from_formula(self):
         self._debug_print("Starting build_graph_from_formula...")
 
-        formula_list = self.problem1.clauses
+        formula_list = self.problem1.element.clauses
         self._debug_print(f"Retrieved formula_list with {len(formula_list)} clause(s).")
 
         # Create nodes per clause and fully connect them.
@@ -118,7 +118,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
         """
         self._debug_print("Starting sol1tosol2 (SAT -> IS) conversion...")
         independent_set = set()
-        formula_list = self.problem1.clauses
+        formula_list = self.problem1.element.clauses
 
         for clause_idx, clause in enumerate(formula_list, start=1):
             chosen_node = None
@@ -162,7 +162,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
         """
         self._debug_print("Starting sol2tosol1 (IS -> SAT) conversion...\n")
         sat_assignment = {}
-        formula_list = self.problem1.clauses
+        formula_list = self.problem1.element.clauses
 
         # 1. Assign based on selected nodes
         self._debug_print("Assigning variables for selected nodes in the Independent Set.")
