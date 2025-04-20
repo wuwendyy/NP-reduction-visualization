@@ -1,4 +1,4 @@
-from npvis.element.formular.variable import Variable
+from npvis.element.formula.variable import Variable
 
 class Clause:
     def __init__(self, clause_id: int):

@@ -3,6 +3,7 @@ Tests for the IndependentSetProblem class.
 Run via:  python test_independent_set_problem.py
 """
 from npvis.problem.independent_set import IndependentSetProblem
+from npvis.element.graph import Node
 
 def test_simple_graph():
     """
@@ -49,7 +50,7 @@ def test_group_function():
         print("Caught expected AssertionError for duplicate nodes in group.")
 
     # Another invalid group: Node not in graph
-    from npvis.element.element import Node
+
     weird_node = Node(999, "X")
     try:
         problem.add_group([weird_node])
@@ -75,7 +76,6 @@ def test_edge_validation():
     except AssertionError:
         print("Caught expected AssertionError for same-node edge.")
     
-    from npvis.element.element import Node
     alien_node = Node(999, "alien")
     try:
         problem.add_edge(nA, alien_node)
