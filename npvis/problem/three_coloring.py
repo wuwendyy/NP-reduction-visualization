@@ -36,6 +36,17 @@ class ThreeColoringProblem(NPProblem):
         # Basic assertions can be added as needed.
         edge = Edge(node1, node2)
         self.element.add_edge(edge)
+        
+    def add_group(self, nodes):
+        """
+        Groups nodes together so that the graph‐layout algorithm
+        can arrange them in a compact cluster.
+        """
+        # sanity checks, if you like:
+        assert len(nodes) > 0, "Group must contain at least one node"
+        for n in nodes:
+            assert n in self.element.nodes, f"{n} not in graph"
+        self.element.groups.append(nodes)
 
     def set_coloring(self, color_assignment: dict):
         """

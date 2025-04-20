@@ -1,1 +1,2 @@
 from .three_sat_to_independent_set import ThreeSatToIndependentSetReduction
+from .three_sat_to_3color import ThreeSatToThreeColoringReduction
