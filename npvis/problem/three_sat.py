@@ -102,8 +102,7 @@ class ThreeSATProblem(NPProblem):
         false_set = set()
         for clause in self.element.clauses:
             for var in clause.variables:
-                # assignment.get(...) defaults to False if variable not in assignment
-                is_true = assignment.get(var.name, False)
+                is_true = assignment[var.name]
                 if var.is_negated:
                     is_true = not is_true
                 if is_true:

@@ -78,7 +78,7 @@ class ThreeSatToThreeColoringReduction(Reduction):
             # build OR₁ = OR(l1,l2)
             g1_12, g2_12, out12 = self._build_or_gadget(lnodes[0], lnodes[1])
             # build OR₂ = OR(out12,l3)
-            g1_123, g2_123, out123 = self._build_or_gadget(out12,   lnodes[2])
+            g1_123, g2_123, out123 = self._build_or_gadget(out12, lnodes[2])
 
             # enforce OR₂ → True
             col.add_edge(out123, self.true_node)
@@ -104,14 +104,14 @@ class ThreeSatToThreeColoringReduction(Reduction):
         Returns (g1,g2,out) for a small 3‑node OR gadget.
         """
         col = self.problem2
-        g1  = col.add_node("") 
-        g2  = col.add_node("") 
-        out = col.add_node("")
-
-        # wire each internal node to both inputs
-        for x in (g1,g2,out):
-            col.add_edge(x, a)
-            col.add_edge(x, b)
+        g1  = col.add_node("in1") 
+        g2  = col.add_node("in2") 
+        out = col.add_node("out")
+        
+        # connect the two inputs to the internal nodes
+        col.add_edge(g1, a)
+        col.add_edge(g2, b)
+        
         # fully interconnect the trio
         col.add_edge(g1, g2)
         col.add_edge(g2, out)
@@ -162,18 +162,17 @@ class ThreeSatToThreeColoringReduction(Reduction):
             target123.update((g1_123, g2_123, out123))
 
         # hand off
-        solution_sets = [S_false, S_true, S_base]
-        self.problem2.set_solution(solution_sets)
+        solution_sets = [S_true, S_false, S_base]
         return solution_sets
 
     def solution2_to_solution1(self, solution_sets):
         """
         Recover SAT by testing which xᵢ node is in S_true.
         """
-        true_set = solution_sets[1]
+        true_set = solution_sets[0]
         sat = {}
         for name,(p,n) in self.var_nodes.items():
-            sat[int(name)] = (p in true_set)
+            sat[name] = (p in true_set)
         return sat
 
     def test_solution(self, sat_assignment):
