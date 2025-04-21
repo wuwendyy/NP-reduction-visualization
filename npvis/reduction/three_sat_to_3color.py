@@ -121,106 +121,90 @@ class ThreeSatToThreeColoringReduction(Reduction):
 
     def solution1_to_solution2(self, sat_assignment):
         """
-        Given a SAT assignment (var→bool), color the 3‑color graph:
-          • Base       ← allowed_colors[2]
-          • True node  ← allowed_colors[1]
-          • False node ← allowed_colors[0]
-          • For each variable gadget (p,n):
-              – if var=True:  p→True,   n→False
-              – else:         p→False,  n→True
-          • For each clause gadget, pick the first satisfied literal ℓ_j,
-            color its C_j node = False, then color the other two with the
-            two remaining colors avoiding conflicts.
-
-        Finally, returns a list of three node‐sets [S₀,S₁,S₂] corresponding
-        to allowed_colors[0], allowed_colors[1], allowed_colors[2], and
-        also calls three_col_problem.set_solution(...)
+        Given a SAT assignment (var→bool), partition *all* nodes into exactly three
+        disjoint sets [S_false, S_true, S_base], hand them to the problem via
+        problem2.set_solution(...), and return that list.
         """
-        col = self.problem2
-        # 1) start neutral
-        col.reset_coloring()
+        # shorthand
+        col_prob = self.problem2
 
-        # 2) color the special triangle
-        Fc, Tc, Bc = self.false_node, self.true_node, self.base_node
-        Fc.color = col.allowed_colors[0]
-        Tc.color = col.allowed_colors[1]
-        Bc.color = col.allowed_colors[2]
+        # prepare the three color‐classes
+        S_false = set()  # color‐class 0
+        S_true  = set()  # color‐class 1
+        S_base  = set()  # color‐class 2
 
-        # 3) variable gadgets
-        for name, (p, n) in self.var_nodes.items():
+        # 1) special triangle
+        S_false.add(self.false_node)
+        S_true .add(self.true_node)
+        S_base .add(self.base_node)
+
+        # 2) variable gadgets
+        for name, (pos, neg) in self.var_nodes.items():
             val = bool(sat_assignment[int(name)])
             if val:
-                p.color = col.allowed_colors[1]
-                n.color = col.allowed_colors[0]
+                S_true .add(pos)
+                S_false.add(neg)
             else:
-                p.color = col.allowed_colors[0]
-                n.color = col.allowed_colors[1]
+                S_false.add(pos)
+                S_true .add(neg)
 
-        # 4) clause gadgets
+        # 3) clause gadgets
         for clause in self.problem1.element.clauses:
-            # collect (literal, its C‐node)
+            # collect (literal, clause_node) pairs
             pairs = []
             for lit in clause.variables:
-                # each lit maps to an output from _build_clause_gadgets
                 cnode = next(iter(self.input1_to_input2_dict[lit]))
                 pairs.append((lit, cnode))
 
-            # pick the first satisfied one
-            j = next(
+            # find the first satisfied literal
+            winner_idx = next(
                 (i for i,(lit,_) in enumerate(pairs)
                  if sat_assignment[int(lit.name)] == lit.is_negated),
                 0
             )
-            # color that C_j = False color
-            _, cj = pairs[j]
-            cj.color = col.allowed_colors[0]
-            used = {col.allowed_colors[0]}
+            # winner goes into S_false
+            _, winner_node = pairs[winner_idx]
+            S_false.add(winner_node)
 
-            # color the other two with the remaining two colors,
-            # avoiding matching their connected literal‐gadget node
-            rem = [c for c in col.allowed_colors if c not in used]
-            for i,(lit,cnode) in enumerate(pairs):
-                if i == j: continue
-                lit_node = self.var_nodes[lit.name][0] if not lit.is_negated else self.var_nodes[lit.name][1]
-                # pick a color ≠ lit_node.color
-                for c in rem:
-                    if c != lit_node.color:
-                        cnode.color = c
-                        rem.remove(c)
+            # the two losers must split {S_base, S_true}
+            # start with both as candidates
+            candidates = [S_base, S_true]
+            for i, (lit, cnode) in enumerate(pairs):
+                if i == winner_idx:
+                    continue
+                # identify which set contains its literal‐node
+                lit_node = (self.var_nodes[lit.name][1]
+                            if lit.is_negated else
+                            self.var_nodes[lit.name][0])
+
+                # pick the first candidate *not* containing lit_node
+                chosen = None
+                for s in candidates:
+                    if lit_node not in s:
+                        chosen = s
                         break
+                # if somehow both contain lit_node (shouldn't happen), just pick the first
+                if chosen is None:
+                    chosen = candidates[0]
 
-        # 5) group nodes by their *actual* solution color,
-        #    ignoring any neutrals that slipped through
-        color_to_set = {c: set() for c in self.problem2.allowed_colors}
-        for node in self.problem2.element.nodes:
-            col = node.color
-            if col in color_to_set:
-                color_to_set[col].add(node)
-            # else:  # neutral or leftover — just skip
+                chosen.add(cnode)
+                candidates.remove(chosen)
 
-        # now build the list in the exact same order
-        sol_sets = [
-            color_to_set[self.problem2.allowed_colors[0]],
-            color_to_set[self.problem2.allowed_colors[1]],
-            color_to_set[self.problem2.allowed_colors[2]],
-        ]
-
-        # hand it off to NPProblem so display_solution will pick up these sets
-        self.problem2.set_solution(sol_sets)
-        return sol_sets
+        # now hand them off
+        solution_sets = [S_false, S_true, S_base]
+        col_prob.set_solution(solution_sets)
+        return solution_sets
 
     def solution2_to_solution1(self, solution_sets):
         """
-        Given three color‐classes [S₀,S₁,S₂], recover a SAT assignment:
-          for each variable x:
-            if its positive‐node in S₁ (the ‘True’ color), x→True,
-            else x→False.
+        Given the three color‐classes [S_false, S_true, S_base], recover
+        a SAT assignment by checking which “pos”‐node is in S_true.
         """
+        # solution_sets[1] is the true‐color class
+        true_set = solution_sets[1]
         sat = {}
-        # solution_sets[1] is the True‐color class
-        true_class = solution_sets[1]
-        for name, (p, n) in self.var_nodes.items():
-            sat[int(name)] = (p in true_class)
+        for name, (pos, neg) in self.var_nodes.items():
+            sat[int(name)] = (pos in true_set)
         return sat
     
     def test_solution(self, sat_assignment):
