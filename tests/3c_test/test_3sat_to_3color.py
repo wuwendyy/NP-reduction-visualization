@@ -40,9 +40,9 @@ def main():
     three_sat.set_solution(recovered)
 
     # 8) Launch the interactive display
-    gm = GameManager(width=800, height=600, fps=30)
-    formula_bb = np.array([[20,  50], [380, 550]])  # left pane
-    graph_bb   = np.array([[420, 50], [780, 550]])  # right pane
+    gm = GameManager(width=1200, height=800, fps=30)
+    formula_bb = np.array([[20,  50], [380, 750]])  # left pane
+    graph_bb   = np.array([[420, 50], [1180, 750]])  # right pane
 
     gm.add_problem(three_sat, formula_bb)
     gm.add_problem(three_col, graph_bb)

@@ -3,16 +3,10 @@ import pygame
 import numpy as np
 from npvis.reduction.reduction import Reduction
 from npvis.problem.three_sat import ThreeSATProblem
-from npvis.problem.three_coloring import ThreeColoringProblem  # the class you wrote
+from npvis.problem.three_coloring import ThreeColoringProblem
 from npvis.element import Node, Edge, Variable
 
 class ThreeSatToThreeColoringReduction(Reduction):
-    """
-    3‑SAT → 3‑Coloring reduction.  
-    problem1: ThreeSATProblem  
-    problem2: ThreeColoringProblem  
-    """
-
     def __init__(self,
                  three_sat_problem: ThreeSATProblem,
                  three_col_problem: ThreeColoringProblem,
@@ -20,12 +14,12 @@ class ThreeSatToThreeColoringReduction(Reduction):
         super().__init__(three_sat_problem, three_col_problem)
         self.DEBUG = debug
 
-        # Special “color‐triangle” nodes
+        # will hold our 3 “base” nodes
         self.base_node   = None
         self.true_node   = None
         self.false_node  = None
 
-        # For each variable name → (positive_node, negative_node)
+        # variable_name → (positive_node, negative_node)
         self.var_nodes = {}
 
     def _debug(self, *args):
@@ -33,66 +27,97 @@ class ThreeSatToThreeColoringReduction(Reduction):
             print("[3SAT→3COL]", *args)
 
     def build_graph_from_formula(self):
-        """
-        1) Create the base triangle (Base, True, False).
-        2) For each variable x: create x, ¬x, connect them to each other and to Base.
-        3) For each clause (ℓ1 ∨ ℓ2 ∨ ℓ3): create a triangle C1,C2,C3 and connect
-           Cj to the node representing ℓj.
-        """
-        col_problem = self.problem2
+        # Phase 1: the color‐base triangle
+        self._build_color_base()
 
-        # --- Step 1: Base triangle ---
-        B = col_problem.add_node("Base")
-        T = col_problem.add_node("True")
-        F = col_problem.add_node("False")
-        for u,v in [(B,T), (T,F), (F,B)]:
-            col_problem.add_edge(u, v)
+        # Phase 2: one gadget per variable
+        self._build_variable_gadgets()
 
-        self.base_node, self.true_node, self.false_node = B, T, F
-        self._debug("Created color‐base triangle:", B.id, T.id, F.id)
+        # Phase 3: one OR‐gadget per clause, built from two XOR sub‐gadgets
+        self._build_clause_gadgets()
 
-        # --- Step 2: Variable gadgets ---
-        # We iterate over all variables appearing in any clause:
-        var_names = sorted({v.name for cl in self.problem1.element.clauses
-                                   for v in cl.variables})
+        self._debug("Finished build_graph_from_formula.\n")
+
+    # ─── PHASE 1 ──────────────────────────────────────────────────────────────
+    def _build_color_base(self):
+        col = self.problem2
+        B = col.add_node("Base")
+        T = col.add_node("True")
+        F = col.add_node("False")
+        for u,v in ((B,T),(T,F),(F,B)):
+            col.add_edge(u,v)
+        col.add_group([B, T, F])
+        self.base_node, self.true_node, self.false_node = B,T,F
+        self._debug("Built base triangle:", B.id,T.id,F.id)
+
+    # ─── PHASE 2 ──────────────────────────────────────────────────────────────
+    def _build_variable_gadgets(self):
+        col = self.problem2
+        # extract every variable name from the SAT formula
+        var_names = sorted({str(v.name) 
+                            for cl in self.problem1.element.clauses 
+                            for v in cl.variables})
         for name in var_names:
-            p = col_problem.add_node(f"x{name}")
-            n = col_problem.add_node(f"¬x{name}")
-            # p—n and both to Base
-            col_problem.add_edge(p, n)
-            col_problem.add_edge(p, B)
-            col_problem.add_edge(n, B)
+            p = col.add_node(f"x{name}")
+            n = col.add_node(f"¬x{name}")
+            # connect p–n and both back to Base
+            col.add_edge(p, n)
+            col.add_edge(p, self.base_node)
+            col.add_edge(n, self.base_node)
+            # group each variable-pair together
+            col.add_group([p, n])
+            
+            self.var_nodes[name] = (p,n)
+            self._debug(f"Variable gadget x{name}: pos={p.id}, neg={n.id}")
 
-            self.var_nodes[name] = (p, n)
-            self._debug(f"Variable gadget for x{name}: pos={p.id}, neg={n.id}")
-
-        # --- Step 3: Clause gadgets ---
+    # ─── PHASE 3 ──────────────────────────────────────────────────────────────
+    def _build_clause_gadgets(self):
+        col = self.problem2
         for c_idx, clause in enumerate(self.problem1.element.clauses):
-            c_nodes = []
-            for lit_idx, literal in enumerate(clause.variables):
-                # Create one clause‐triangle node per literal
-                cnode = col_problem.add_node(f"C{c_idx}_{lit_idx}")
-                c_nodes.append(cnode)
+            # collect the literal‐gadget nodes in order
+            lit_nodes = []
+            for lit in clause.variables:
+                pos, neg = self.var_nodes[lit.name]
+                lit_node = pos if not lit.is_negated else neg
+                lit_nodes.append(lit_node)
 
-                # Map back for click‐highlight or solution correspondence
-                self.add_input1_to_input2_by_pair(literal, cnode)
-                # self.add_input1_to_input2_dict.setdefault(literal, set()).add(cnode)
+            # now build the OR(lit1,lit2,lit3) as XOR( XOR(l1,l2), l3 )
+            x12 = self._build_xor_gadget(lit_nodes[0], lit_nodes[1])
+            x123 = self._build_xor_gadget(x12[-1],    # last node of first XOR
+                                          lit_nodes[2])
 
-                # Connect clause node to the appropriate literal gadget‐node
-                pos_node, neg_node = self.var_nodes[literal.name]
-                lit_n = neg_node if literal.is_negated else pos_node
-                col_problem.add_edge(cnode, lit_n)
+            # the two XOR calls created 3+3=6 new nodes: x12[0..2], x123[0..2]
+            or_nodes = list(x12) + list(x123)            
+            for u in or_nodes:
+                # register the correspondence for highlighting
+                for lit in clause.variables:
+                    self.add_input1_to_input2_by_pair(lit, u)
+            self._debug(f"Built clause#{c_idx} OR‐gadget: nodes {[n.id for n in or_nodes]}")
 
-                self._debug(f"  Clause#{c_idx} literal {literal} → clause‐node {cnode.id}")
-
-            # Fully connect the 3 clause‐nodes into a triangle
-            for i in range(3):
-                for j in range(i+1, 3):
-                    col_problem.add_edge(c_nodes[i], c_nodes[j])
-            col_problem.add_group(c_nodes)
-            self._debug(f"Formed clause‐triangle for clause #{c_idx}: nodes {[n.id for n in c_nodes]}")
-
-        self._debug("build_graph_from_formula complete.\n")
+    def _build_xor_gadget(self, a: Node, b: Node):
+        """
+        Create a 3‑node XOR gadget that “computes” a⊕b in a 3‑coloring sense.
+        Returns the 3 new nodes in a tuple (g1,g2,g3), where g3 is the final output node.
+        You must wire edges here according to your XOR‐gadget design.
+        """
+        col = self.problem2
+        # create 3 new nodes (no name for now)
+        g1 = col.add_node("")
+        g2 = col.add_node("")
+        g3 = col.add_node("")
+        
+        # Example wiring—replace with your actual gadget:
+        col.add_edge(g1, a)
+        col.add_edge(g1, b)
+        col.add_edge(g2, a)
+        col.add_edge(g2, b)
+        col.add_edge(g3, g1)
+        col.add_edge(g3, g2)
+        
+        # Group XOR gadget nodes together for layout
+        col.add_group([g1, g2, g3])
+        
+        return g1, g2, g3
 
     def solution1_to_solution2(self, sat_assignment):
         """
