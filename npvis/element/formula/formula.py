@@ -160,5 +160,5 @@ class Formula(Element):
                     # variable.toggle_highlight()  # Toggle its highlight color.
                     print(f"Variable {variable} in clause {clause_idx} clicked at {pos}.")
                     return variable
-        return False
+        return None
     

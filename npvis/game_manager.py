@@ -57,14 +57,13 @@ class GameManager:
                     # Check if the mouse click is within the problem's bounding box
                     if (bounding_box[0, 0] < event.pos[0] < bounding_box[1, 0] and 
                         bounding_box[0, 1] < event.pos[1] < bounding_box[1, 1]):
-                        sub_element = problem.handle_event(event)
-                        if sub_element is not False:
-                            # clicked something
-                            if sub_element in self.clicked:
+                        clicked_element = problem.handle_event(event)
+                        if clicked_element is not None:
+                            if clicked_element in self.clicked:
                                 # unclick it 
-                                self.clicked.remove(sub_element)
+                                self.clicked.remove(clicked_element)
                             else:
-                                self.clicked.add(sub_element)
+                                self.clicked.add(clicked_element)
                             if not self.show_solution:
                                 self.reduction.display_input_to_input(self.clicked)
 

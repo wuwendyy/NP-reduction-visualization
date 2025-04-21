@@ -9,9 +9,9 @@ class Reduction:
         self.output1_to_output2_pairs = []
         self.output2_to_output1_pairs = []
         self.input1_to_input2_dict = {}  # map input 1 to set of input 2
-        self.input2_to_input1_dict = {}
-        self.output1_to_output2_pairs_dict = {}
-        self.output2_to_output1_pairs_dict = {}
+        # self.input2_to_input1_dict = {}
+        # self.output1_to_output2_pairs_dict = {}
+        # self.output2_to_output1_pairs_dict = {}
         self.highlighted = []  # keep track of highlighted items for resetting
 
     '''
@@ -62,33 +62,35 @@ class Reduction:
     def display_input_to_input(self, clicked_set):
         self.reset_highlighted()
         is_input1 = False
-        if len(clicked_set) != 0:
-            # highlight the clicked set:
-            for e in clicked_set:
-                e.change_color((255, 0, 0))
-                self.highlighted.append(e)
-            # CASE: one item in set 
-            if len(clicked_set) == 1:
-                # if The user click on problem 1 element 
-                e1 = next(iter(clicked_set))
-                if e1 in self.input1_to_input2_dict:
-                    is_input1 = True
-                    for e in self.input1_to_input2_dict[e1]:
-                        e.change_color((255, 0, 0))
-                        self.highlighted.append(e)
-            # CASE: not input 1
-            if not is_input1:
-                for key, value in self.input1_to_input2_dict.items():
-                    print(f"clicked set: {clicked_set}")
-                    print(f"input 1 set: {value}")
-                    if clicked_set <= value: # clicked set is a subset 
-                        print("find input 1")
-                        # found input1
-                        lighter_color = lighten_rgb((255, 0, 0), (1-len(clicked_set) / len(value)))
-                        key.change_color(lighter_color)
-                        self.highlighted.append(key)
-                            
-
+        if len(clicked_set) == 0:
+            return
+        
+        # highlight the clicked set:
+        for e in clicked_set:
+            e.change_color((255, 0, 0))
+            self.highlighted.append(e)
+        # CASE: one item in set 
+        if len(clicked_set) == 1:
+            # if The user click on problem 1 element 
+            e1 = next(iter(clicked_set))
+            if e1 in self.input1_to_input2_dict:
+                is_input1 = True
+                for e in self.input1_to_input2_dict[e1]:
+                    e.change_color((255, 0, 0))
+                    self.highlighted.append(e)
+        # CASE: not input 1
+        if not is_input1:
+            for key, value in self.input1_to_input2_dict.items():
+                print(f"clicked set: {clicked_set}")
+                print(f"input 1 set: {value}")
+                if clicked_set <= value: # clicked set is a subset 
+                    print("find input 1")
+                    
+                    # Note: emperically, a steeper ratio seems help visualization
+                    ratio = (1 - len(clicked_set) / len(value)) ** 3
+                    lighter_color = lighten_rgb((255, 0, 0), ratio)
+                    key.change_color(lighter_color)
+                    self.highlighted.append(key)
 
     def reset_highlighted(self):
         for e in self.highlighted:
