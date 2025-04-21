@@ -63,6 +63,13 @@ class ThreeSatToThreeColoringReduction(Reduction):
             col.add_group([p,n])
             self.var_nodes[name] = (p,n)
             self._debug(f"Var gadget {name}:", p.id, n.id)
+        
+        # allow click→highlight on both gadget‑outputs
+        for ci, clause in enumerate(self.problem1.element.clauses):
+            for lit in clause.variables:
+                p, n = self.var_nodes[lit.name]
+                self.add_input1_to_input2_by_pair(lit, p)
+                self.add_input1_to_input2_by_pair(lit, n)
 
     def _build_clause_gadgets(self):
         col = self.problem2
@@ -88,12 +95,6 @@ class ThreeSatToThreeColoringReduction(Reduction):
                 ([g1_12, g2_12, out12],
                  [g1_123, g2_123, out123])
             )
-
-            # allow click→highlight on both gadget‑outputs
-            for lit in clause.variables:
-                for node in (g1_12, g2_12, out12, g1_123, g2_123, out123):
-                    # TODO: think about how to build correspondences
-                    self.add_input1_to_input2_by_pair(lit, node)
 
             self._debug(f"Clause#{ci} gadgets:", 
                         [g1_12.id, g2_12.id, out12.id,
