@@ -1,7 +1,10 @@
 from npvis.element.formula.variable import Variable
+from npvis.element.subelement import SubElement
 
-class Clause:
+
+class Clause(SubElement):
     def __init__(self, clause_id: int):
+        SubElement.__init__(self, clause_id, clause_id)
         self.variables = []
         self.clause_id = clause_id
 

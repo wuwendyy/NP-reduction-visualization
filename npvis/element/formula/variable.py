@@ -1,12 +1,12 @@
 from npvis.element.color import LIGHTBLUE, LIGHTPINK
+from npvis.element.subelement import SubElement
 
-class Variable:
+
+class Variable(SubElement):
     def __init__(self, name, is_negated, clause_id, var_id, color=LIGHTBLUE):
-        self.name = name
+        SubElement.__init__(self, var_id, name, color)
         self.is_negated = is_negated
         self.clause_id = clause_id
-        self.id = var_id
-        self.color = color
         self.default_color = color  # Save the default color
 
     def change_color(self, new_color):
@@ -18,7 +18,7 @@ class Variable:
         else:
             self.change_color(self.default_color)
 
-    def __str__(self):  
+    def __str__(self):
         sign = "" if not self.is_negated else "¬"
         return f"{sign}x{self.name}"
 
