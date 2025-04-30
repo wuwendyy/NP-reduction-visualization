@@ -52,20 +52,7 @@ class ThreeSATProblem(NPProblem):
         Returns:
             bool: True if formula is satisfied, otherwise False.
         """
-        return all(self._evaluate_clause(clause, assignment) for clause in self.element.clauses)
-
-    def _evaluate_clause(self, clause_obj, assignment) -> bool:
-        """
-        Evaluates a single clause under a given assignment.
-        """
-        result = False
-        for var in clause_obj.variables:
-            # print(f"testing {var.name}, negated = {var.is_negated}")
-            # assignment.get(...) defaults to False if variable not in assignment
-            if assignment.get(var.name, False) != var.is_negated:
-                result = True
-                break
-        return result
+        return all(clause.evaluate(assignment) for clause in self.element.clauses)
 
     def get_variables(self) -> set[str]:
         """
