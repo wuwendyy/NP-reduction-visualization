@@ -55,12 +55,27 @@ class ThreeColoringProblem(NPProblem):
 
     def evaluate(self) -> bool:
         """
-        Evaluates whether the current coloring is a valid 3-coloring.
-        Returns True if all adjacent nodes have different colors, False otherwise.
+        Evaluates whether the current solution (a list of 3 node‐sets) is a valid 3-coloring.
+        Returns True if for every edge, its two nodes lie in different sets; False otherwise.
         """
+        # Assert that we have a solution
+        if not self.solution or len(self.solution) != 3:
+            raise ValueError("Solution must be a list of three node sets.")
+        
+        # build a fast lookup: node -> which group it’s assigned to
+        node_to_group = {}
+        for grp_idx, node_set in enumerate(self.solution):
+            for node in node_set:
+                node_to_group[node] = grp_idx
+
+        # check every edge
         for edge in self.element.edges:
-            if edge.node1.color == edge.node2.color:
+            g1 = node_to_group.get(edge.node1, None)
+            g2 = node_to_group.get(edge.node2, None)
+            # if both endpoints assigned and in the same group, invalid
+            if g1 is not None and g1 == g2:
                 return False
+
         return True
 
     def get_graph(self) -> Graph:

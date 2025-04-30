@@ -88,7 +88,8 @@ class ThreeSatToThreeColoringReduction(Reduction):
             g1_123, g2_123, out123 = self._build_or_gadget(out12, lnodes[2])
 
             # enforce OR₂ → True
-            col.add_edge(out123, self.true_node)
+            col.add_edge(out123, self.base_node)
+            col.add_edge(out123, self.false_node)
 
             # record all 6 nodes
             self.clause_outputs.append(
@@ -118,7 +119,7 @@ class ThreeSatToThreeColoringReduction(Reduction):
         col.add_edge(g2, out)
         col.add_edge(out, g1)
 
-        col.add_group([g1,g2,out])
+        col.add_group([out,g2,g1])
         return g1, g2, out
 
     def solution1_to_solution2(self, sat_assignment):
@@ -140,28 +141,52 @@ class ThreeSatToThreeColoringReduction(Reduction):
             else:
                 S_false.add(p);  S_true.add(n)
 
-        # 3) Clause gadgets: now include all 6 nodes per clause
-        # TODO: fix the logic to color the nodes in these OR gadgets
+        # 3) Clause gadgets — hard-coded 8 → 6 mapping
+        # Prepare our lookup table:
+        # each key is (v1,v2,v3) and each value is a pair of lists
+        #   ([class for g1_12, class for g2_12, class for out12],
+        #    [class for g1_123, class for g2_123, class for out123])
+        # where each “class” is one of S_true, S_false or S_base.
+        table = {
+            # (v1,v2,v3) : ([g1_12,g2_12,out12], [g1_123,g2_123,out123])
+            (False, False, False): ([S_base, S_true, S_false],
+                                    [S_base, S_base, S_true]),
+            (False, False,  True): ([S_base, S_true, S_false],
+                                    [S_base,  S_false,  S_true ]),
+            (False,  True, False): ([S_base, S_false,  S_true ],
+                                    [S_false,  S_base,  S_true ]),
+            (False,  True,  True): ([S_true, S_base,  S_false ],
+                                    [S_base,  S_false,  S_true ]),
+            ( True, False, False): ([S_false,  S_true,  S_base ],
+                                    [S_false,  S_base,  S_true ]),
+            ( True, False,  True): ([S_base,  S_true,  S_false ],
+                                    [S_base,  S_false,  S_true ]),
+            ( True,  True, False): ([S_base,  S_false,  S_true ],
+                                    [S_false,  S_base,  S_true ]),
+            ( True,  True,  True): ([S_base,  S_false,  S_true ],
+                                    [S_base,  S_false,  S_true ]),
+        }
+
         for ci, clause in enumerate(self.problem1.element.clauses):
             (g1_12, g2_12, out12), (g1_123, g2_123, out123) = self.clause_outputs[ci]
 
-            # compute truth of sub‑ORs
+            # compute the three literal values
             l1,l2,l3 = clause.variables
             v1 = (sat_assignment[int(l1.name)] != l1.is_negated)
             v2 = (sat_assignment[int(l2.name)] != l2.is_negated)
             v3 = (sat_assignment[int(l3.name)] != l3.is_negated)
 
-            val12  = v1 or v2
-            val123 = val12 or v3
+            # look up which class each node goes into
+            class12, class123 = table[(v1,v2,v3)]
 
-            # gadget1: assign all three internal/out12
-            target12 = S_true if val12 else S_false
-            target12.update((g1_12, g2_12, out12))
+            # assign the first OR-gadget
+            for node, target_set in zip((g1_12, g2_12, out12), class12):
+                target_set.add(node)
 
-            # gadget2: assign all three internal/out123
-            target123 = S_true if val123 else S_false
-            target123.update((g1_123, g2_123, out123))
-
+            # assign the second OR-gadget
+            for node, target_set in zip((g1_123, g2_123, out123), class123):
+                target_set.add(node)
+        
         # hand off
         solution_sets = [S_true, S_false, S_base]
         return solution_sets
@@ -179,5 +204,6 @@ class ThreeSatToThreeColoringReduction(Reduction):
     def test_solution(self, sat_assignment):
         sat_ok    = self.problem1.evaluate(sat_assignment)
         sol_sets  = self.solution1_to_solution2(sat_assignment)
+        self.problem2.set_solution(sol_sets)
         col_ok    = self.problem2.evaluate()
         return sat_ok, col_ok

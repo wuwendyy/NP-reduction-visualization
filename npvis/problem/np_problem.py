@@ -10,9 +10,9 @@ class NPProblem:
         self.solution = []
         # a list of colors for each grouped solution 
         self.colors = [
-            (0, 0, 255),    # Blue
-            (255, 0, 0),    # Red
             (0, 255, 0),    # Green
+            (255, 0, 0),    # Red
+            (0, 0, 255),    # Blue
             (255, 165, 0),  # Orange
             (128, 0, 128),  # Purple
             (255, 255, 0),  # Yellow
