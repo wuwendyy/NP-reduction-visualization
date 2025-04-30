@@ -1,17 +1,35 @@
 from npvis.element.formula.variable import Variable
 from npvis.element.subelement import SubElement
-
+from npvis.element.color import LIGHTGREY, LIGHTPINK
 
 class Clause(SubElement):
     def __init__(self, clause_id: int):
         SubElement.__init__(self, clause_id, clause_id)
         self.variables = []
         self.clause_id = clause_id
+        
+        # default & current background color
+        self.default_color = LIGHTGREY  # very light grey
+        self.color = self.default_color
 
     def add_variable(self, variable: Variable):
         self.variables.append(variable)
+        
+    def change_color(self, new_color):
+        """Set this clause’s background color."""
+        self.color = new_color
+
+    def reset_color(self):
+        """Restore the default background color."""
+        self.color = self.default_color
 
     def evaluate(self, solution):
-        # a clause is satisfied if ANY literal is true,
-        # i.e. assignment != is_negated
-        return any(solution[v.id] != v.is_negated for v in self.variables)
+        # Check if the solution keys are integers or strings
+        if all(isinstance(k, int) for k in solution.keys()):
+            # Convert variable names to integers for comparison
+            return any(solution[int(v.name)] != v.is_negated for v in self.variables)
+        elif all(isinstance(k, str) for k in solution.keys()):
+            # Use variable names as strings for comparison
+            return any(solution[v.name] != v.is_negated for v in self.variables)
+        else:
+            raise ValueError("Solution keys must be consistently either all integers or all strings.")

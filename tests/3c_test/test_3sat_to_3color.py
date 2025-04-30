@@ -12,8 +12,8 @@ def main():
     # 2) Load a CNF formula into ThreeSATProblem
     clauses = [
         [(1, False), (2, True),  (3, True )],  # (¬x1 ∨ x2 ∨ x3)
-        # [(1, True ), (2, False), (3, True )],  # ( x1 ∨ ¬x2 ∨ x3)
-        # [(1, False), (2, True),  (4, True )]   # (¬x1 ∨ x2 ∨ x4)
+        [(1, True ), (2, False), (3, True )],  # ( x1 ∨ ¬x2 ∨ x3)
+        [(1, False), (2, True),  (4, True )]   # (¬x1 ∨ x2 ∨ x4)
     ]
     three_sat.load_formula_from_tuples(clauses)
 

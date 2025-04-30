@@ -11,10 +11,11 @@ class Formula(Element):
         self.bounding_box = bounding_box
         self.original_bounding_box = bounding_box
         self.font = None
-        self.literal_rects = {}  # Mapping: (clause_index, literal_index) -> pygame.Rect
+        self.literal_rects = {}  # (clause_idx, lit_idx) -> Rect
+        self.clause_rects  = {}  # clause_idx -> Rect
 
     def set_bounding_box(self, bounding_box):
-        margin = 10
+        margin = 20
         # Adjust bounding box so that node centers are confined within an area that
         # leaves a margin of 'node_radius' on all sides.
         adjusted_box = np.array([
@@ -98,67 +99,96 @@ class Formula(Element):
         if self.font is None:
             self.font = pygame.font.Font(None, 30)
         self.literal_rects.clear()
+        self.clause_rects.clear()
 
-        x, y = self.bounding_box[0]
-        line_height = 30
-        current_x = x
-        current_y = y
+        x0, y0 = self.bounding_box[0]
+        line_height = 40
+        vertical_padding = 10
+        start_x = x0
+        current_y = y0
 
-        # For each clause, render its literals and store their bounding rects.
         for c_idx, clause in enumerate(self.clauses):
-            # Render opening parenthesis
-            open_paren = self.font.render("(", True, LIGHTGREY)
-            open_rect = open_paren.get_rect(topleft=(current_x, current_y))
-            screen.blit(open_paren, open_rect)
-            current_x += open_rect.width
+            clause_x = start_x
+            clause_y = current_y
+            run_x = clause_x
 
+            # Render "("
+            open_surf = self.font.render("(", True, LIGHTGREY)
+            open_rect = open_surf.get_rect(topleft=(run_x, current_y))
+            screen.blit(open_surf, open_rect)
+            run_x += open_rect.width
+
+            # Render each literal + " OR "
             for l_idx, var in enumerate(clause.variables):
-                # Render the variable using its current color.
-                lit_surface = self.font.render(str(var), True, var.color)
-                lit_rect = lit_surface.get_rect(topleft=(current_x, current_y))
-                screen.blit(lit_surface, lit_rect)
-                # Store the bounding rectangle for later click detection.
+                lit_surf = self.font.render(str(var), True, var.color)
+                lit_rect = lit_surf.get_rect(topleft=(run_x, current_y))
+                screen.blit(lit_surf, lit_rect)
                 self.literal_rects[(c_idx, l_idx)] = lit_rect
-                current_x += lit_rect.width
+                run_x += lit_rect.width
 
-                # Add " OR " if not the last literal in the clause.
                 if l_idx < len(clause.variables) - 1:
-                    or_surface = self.font.render(" OR ", True, LIGHTGREY)
-                    or_rect = or_surface.get_rect(topleft=(current_x, current_y))
-                    screen.blit(or_surface, or_rect)
-                    current_x += or_rect.width
+                    or_surf = self.font.render(" OR ", True, LIGHTGREY)
+                    or_rect = or_surf.get_rect(topleft=(run_x, current_y))
+                    screen.blit(or_surf, or_rect)
+                    run_x += or_rect.width
 
-            # Render closing parenthesis.
-            closing = ")" if c_idx == len(self.clauses) - 1 else ") AND "
-            close_surface = self.font.render(closing, True, LIGHTGREY)
-            close_rect = close_surface.get_rect(topleft=(current_x, current_y))
-            screen.blit(close_surface, close_rect)
-            current_x = self.bounding_box[0][0]  # Reset x for next line.
-            current_y += line_height
+            # Render ") AND " or ")"
+            closing = ") AND " if c_idx < len(self.clauses) - 1 else ")"
+            close_surf = self.font.render(closing, True, LIGHTGREY)
+            close_rect = close_surf.get_rect(topleft=(run_x, current_y))
+            screen.blit(close_surf, close_rect)
+            run_x += close_rect.width
 
-        # Debug bounding box
+            # measure clause width and height
+            width = run_x - clause_x + 20
+            height = line_height
+            cls_bg_x = clause_x - 20 // 2
+            cls_bg_y = clause_y - 9
+
+            # --- shaded background with round corners ---
+            bg = pygame.Surface((width, height), pygame.SRCALPHA)
+            bg.fill((*clause.color, 40))    # semi‐transparent fill
+            screen.blit(bg, (cls_bg_x, cls_bg_y))
+
+            # --- rounded‐corner border ---
+            border_rect = pygame.Rect(cls_bg_x, cls_bg_y, width, height)
+            pygame.draw.rect(
+                screen,
+                clause.color,
+                border_rect,
+                width=2,
+                border_radius=8   # ↑ round the corners
+            )
+
+            # store for click hits
+            self.clause_rects[c_idx] = border_rect
+
+            # move down for next clause
+            current_y += height + vertical_padding
+
+        # final overall bounding‐box debug
         pygame.draw.rect(
-            screen,
-            LIGHTGREY,
+            screen, LIGHTGREY,
             pygame.Rect(
-            self.original_bounding_box[0][0],
-            self.original_bounding_box[0][1],
-            self.original_bounding_box[1][0] - self.original_bounding_box[0][0],
-            self.original_bounding_box[1][1] - self.original_bounding_box[0][1]
+                *self.original_bounding_box[0],
+                *(self.original_bounding_box[1] - self.original_bounding_box[0])
             ),
             width=1
         )
 
     def handle_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            pos = event.pos
-            # Check if the click falls within any literal's bounding rect.
-            for key, rect in self.literal_rects.items():
-                if rect.collidepoint(pos):
-                    clause_idx, literal_idx = key
-                    variable = self.clauses[clause_idx].variables[literal_idx]
-                    # variable.toggle_highlight()  # Toggle its highlight color.
-                    print(f"Variable {variable} in clause {clause_idx} clicked at {pos}.")
-                    return variable
+        if event.type != pygame.MOUSEBUTTONDOWN:
+            return None
+
+        pos = event.pos
+        # 1) check literal first
+        for (c_idx, l_idx), rect in self.literal_rects.items():
+            if rect.collidepoint(pos):
+                return self.clauses[c_idx].variables[l_idx]
+
+        # 2) if none, check clause rectangles
+        for c_idx, rect in self.clause_rects.items():
+            if rect.collidepoint(pos):
+                return self.clauses[c_idx]
+
         return None
-    

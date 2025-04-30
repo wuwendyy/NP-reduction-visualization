@@ -96,6 +96,10 @@ class ThreeSatToThreeColoringReduction(Reduction):
                 ([g1_12, g2_12, out12],
                  [g1_123, g2_123, out123])
             )
+            
+            # allow click→highlight on all OR nodes from each clause
+            for or_node in (g1_12, g2_12, out12, g1_123, g2_123, out123):
+                self.add_input1_to_input2_by_pair(clause, or_node)
 
             self._debug(f"Clause#{ci} gadgets:", 
                         [g1_12.id, g2_12.id, out12.id,
