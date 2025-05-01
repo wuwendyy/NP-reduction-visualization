@@ -56,6 +56,10 @@ class Graph(Element):
     def add_edge(self, edge: Edge):
         self.edges.add(edge)
 
+    def add_group(self, nodes: [Node]):
+        # TODO
+        pass
+
     def hasEdge(self, n1, n2):
         return any((e.node1==n1 and e.node2==n2) or (e.node1==n2 and e.node2==n1)
                    for e in self.edges)
@@ -192,3 +196,36 @@ class Graph(Element):
                     print(f"Clicked node {n.id} ({n.name})")
                     return n
         return None
+
+    '''
+    Read in nodes, edges, and groups from a file
+    '''
+    def parse(self, filename):
+        with open(filename, 'r') as file:
+            self.nodes = set()  # Ensure fresh
+            self.edges = set()
+            self.groups = []
+            with open(filename, "r") as file:
+                counter = 0
+                for line in file:
+                    pass
+                    line = line.strip()
+                    if line[0] == '(':  # edge
+                        names = line[1:-1].split(", ")
+                        node1 = self.node_dict.get(names[0])
+                        node2 = self.node_dict.get(names[1])
+                        e = Edge(node1, node2)
+                        self.edges.add(e)
+                        node1.add_neighbor(node2.id)
+                        node2.add_neighbor(node1.id)
+                    elif line[0] == '[':  # group
+                        names = line[1:-1].split(", ")
+                        group = []
+                        for name in names:
+                            group.append(self.node_dict.get(name))
+                        self.groups.append(group)
+                    else:  # node
+                        n = Node(counter, line)
+                        counter += 1
+                        self.nodes.add(n)
+                        self.node_dict[line] = n  # append to node_dict for future lookup

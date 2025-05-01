@@ -22,11 +22,11 @@ def test_simple_graph():
 
     # {A, C} is an independent set => True
     test_set = {A.id, C.id}
-    assert problem.is_independent_set(test_set) is True, "A,C should be independent"
+    assert problem.evaluate(test_set) is True, "A,C should be independent"
 
     # {A, B} is not independent => there's an edge
     test_set2 = {A.id, B.id}
-    assert problem.is_independent_set(test_set2) is False, "A,B share an edge => not independent"
+    assert problem.evaluate(test_set2) is False, "A,B share an edge => not independent"
 
     print("Simple graph test passed!")
 

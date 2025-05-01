@@ -54,7 +54,7 @@ class IndependentSetProblem(NPProblem):
         
         self.element.groups.append(nodes)
 
-    def is_independent_set(self, node_ids) -> bool:
+    def evaluate(self, node_ids) -> bool:
         """
         Checks if node_ids form an independent set in this graph.
 
@@ -114,4 +114,4 @@ if __name__ == "__main__":
     ind_set_problem.add_edge(n2, n3)
 
     test_set = {n1.id, n3.id}
-    print("Is it independent?", ind_set_problem.is_independent_set(test_set))  # Expect True
+    print("Is it independent?", ind_set_problem.evaluate(test_set))  # Expect True

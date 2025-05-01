@@ -20,7 +20,7 @@ class Variable(SubElement):
 
     def __str__(self):
         sign = "" if not self.is_negated else "¬"
-        return f"{sign}x{self.name}"
+        return f"{sign}{self.name}"
 
     def __repr__(self):
         return self.__str__()

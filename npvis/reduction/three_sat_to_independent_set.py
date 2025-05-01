@@ -86,7 +86,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
             # for appending to input1_to_input2_dict later
             name = literal_A.name
             if literal_A.is_negated:
-                name = literal_A.name + "_neg"
+                name = str(literal_A.name) + "_neg"
                 
             if name in name_literal_dict:
                 name_literal_dict[name].add(literal_A)
@@ -206,7 +206,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
         self._debug_print(f"  Is formula satisfied? {satisfied}")
 
         chosen = self.solution1_to_solution2(sat_assignment)
-        valid_independent = self.problem2.is_independent_set(chosen)
+        valid_independent = self.problem2.evaluate(chosen)
         self._debug_print(f"  Is chosen set a valid independent set? {valid_independent}")
         self._debug_print("Finished test_solution.\n")
 

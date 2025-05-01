@@ -12,6 +12,14 @@ class Clause(SubElement):
         self.default_color = LIGHTGREY  # very light grey
         self.color = self.default_color
 
+    def __repr__(self):
+        line = "Clause " + str(self.clause_id) + ": "
+        for var in self.variables:
+            if var.is_negated:
+                line = line + "¬"
+            line = line + var.name + " OR "
+        return line[:-4]
+
     def add_variable(self, variable: Variable):
         self.variables.append(variable)
         

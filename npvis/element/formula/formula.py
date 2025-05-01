@@ -92,6 +92,7 @@ class Formula(Element):
         """
         return self.clauses
 
+    # this can be removed because the evaluation comes through three_sat class
     def evaluate(self, solution):
         return all(clause.evaluate(solution) for clause in self.clauses)
 
