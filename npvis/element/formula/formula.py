@@ -8,8 +8,7 @@ from npvis.element.color import LIGHTGREY
 class Formula(Element):
     def __init__(self, bounding_box=np.array([[50, 50], [550, 550]])):
         self.clauses = []
-        self.bounding_box = bounding_box
-        self.original_bounding_box = bounding_box
+        self.set_bounding_box(bounding_box)
         self.font = None
         self.literal_rects = {}  # (clause_idx, lit_idx) -> Rect
         self.clause_rects  = {}  # clause_idx -> Rect

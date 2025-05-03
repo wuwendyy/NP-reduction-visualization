@@ -49,7 +49,7 @@ if __name__ == "__main__":
     # Initialize and display the graph with bounding box and node radius
     bounding_box = np.array([[0, 0], [600, 600]])
     graph = Graph(nodes=nodes, edges=edges, groups=groups, node_radius=20)
-    graph.determine_node_positions_by_groups()
+    graph.determine_node_positions()
     # start pygame:
     pygame.init()
     screen = pygame.display.set_mode((800, 600))

@@ -4,13 +4,13 @@ from npvis.element import Graph, Formula, Edge, Node
 
 # Initialize Pygame
 pygame.init()
-screen = pygame.display.set_mode((800, 600))
+screen = pygame.display.set_mode((1200, 800))
 pygame.display.set_caption("Graph and Formula Display")
 clock = pygame.time.Clock()
 
 # Define bounding boxes for both elements
-graph_bounding_box = np.array([[400, 50], [780, 550]])  # Right side of the window
-formula_bounding_box = np.array([[20, 50], [380, 200]])  # Left upper side
+formula_bb = np.array([[20,  50], [380, 750]])  # left pane
+graph_bb   = np.array([[420, 50], [1180, 750]])  # right pane
 
 # Initialize graph with nodes, edges, and groups
 nodes = set()
@@ -34,11 +34,11 @@ for i in range(0, node_count, group_size):
                 edges.add(Edge(group[a], group[b]))
 
 # Create graph and determine node positions
-graph = Graph(nodes=nodes, edges=edges, groups=groups, bounding_box=graph_bounding_box, node_radius=20)
-graph.determine_node_positions_by_groups()
+graph = Graph(nodes=nodes, edges=edges, groups=groups, bounding_box=graph_bb, node_radius=20)
+graph.determine_node_positions()
 
 # Initialize formula and parse from file
-formula = Formula(formula_bounding_box)
+formula = Formula(formula_bb)
 formula.parse("data/sampleFormula.txt")  # Provide correct file path
 
 # Main loop
