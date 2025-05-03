@@ -50,7 +50,7 @@ class ThreeSatToThreeColoringReduction(Reduction):
     def _build_variable_gadgets(self):
         col = self.problem2
         names = sorted({
-            str(v.name)
+            v.name
             for clause in self.problem1.element.clauses
             for v in clause.variables
         })

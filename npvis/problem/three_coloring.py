@@ -16,12 +16,12 @@ class ThreeColoringProblem(NPProblem):
         # Holds the current coloring: mapping node_id -> color (tuple)
         self.coloring = {}
 
-    def add_node(self, name=None) -> Node:
+    def add_node(self, name) -> Node:
         """
         Adds a node to the graph with a default color (the first allowed color).
         """
-        node_name = name if name is not None else str(self.next_node_id)
-        node = Node(self.next_node_id, node_name)
+        assert name is not None, "Node name cannot be None"
+        node = Node(self.next_node_id, name)
         self.element.add_node(node)
         self.next_node_id += 1
         return node

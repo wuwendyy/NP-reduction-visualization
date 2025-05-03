@@ -12,15 +12,6 @@ class IndependentSetProblem(NPProblem):
         self.next_node_id = 1
 
     def add_node(self, name=None) -> Node:
-        """
-        Adds a node to the graph and returns it.
-
-        Args:
-            name (str): Optional name/label for the node.
-
-        Returns:
-            Node: The newly created node.
-        """
         assert name == None or isinstance(name, str), "Name must be a string."
         assert len(name) <= 10, "Name must be at most 10 characters long."
         

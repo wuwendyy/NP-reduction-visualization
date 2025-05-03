@@ -32,12 +32,5 @@ class Clause(SubElement):
         self.color = self.default_color
 
     def evaluate(self, solution):
-        # Check if the solution keys are integers or strings
-        if all(isinstance(k, int) for k in solution.keys()):
-            # Convert variable names to integers for comparison
-            return any(solution[int(v.name)] != v.is_negated for v in self.variables)
-        elif all(isinstance(k, str) for k in solution.keys()):
-            # Use variable names as strings for comparison
-            return any(solution[v.name] != v.is_negated for v in self.variables)
-        else:
-            raise ValueError("Solution keys must be consistently either all integers or all strings.")
+        return any(solution[v.name] != v.is_negated for v in self.variables)
+    
