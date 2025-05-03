@@ -55,8 +55,8 @@ class ThreeSatToThreeColoringReduction(Reduction):
             for v in clause.variables
         })
         for name in names:
-            p = col.add_node(f"x{name}")
-            n = col.add_node(f"¬x{name}")
+            p = col.add_node(f"{name}")
+            n = col.add_node(f"¬{name}")
             col.add_edge(p,n)
             col.add_edge(p,self.base_node)
             col.add_edge(n,self.base_node)
@@ -139,7 +139,7 @@ class ThreeSatToThreeColoringReduction(Reduction):
 
         # 2) Variable gadgets
         for name,(p,n) in self.var_nodes.items():
-            v = bool(sat_assignment[int(name)])
+            v = bool(sat_assignment[name])
             if v:
                 S_true.add(p);   S_false.add(n)
             else:
@@ -176,9 +176,9 @@ class ThreeSatToThreeColoringReduction(Reduction):
 
             # compute the three literal values
             l1,l2,l3 = clause.variables
-            v1 = (sat_assignment[int(l1.name)] != l1.is_negated)
-            v2 = (sat_assignment[int(l2.name)] != l2.is_negated)
-            v3 = (sat_assignment[int(l3.name)] != l3.is_negated)
+            v1 = (sat_assignment[l1.name] != l1.is_negated)
+            v2 = (sat_assignment[l2.name] != l2.is_negated)
+            v3 = (sat_assignment[l3.name] != l3.is_negated)
 
             # look up which class each node goes into
             class12, class123 = table[(v1,v2,v3)]

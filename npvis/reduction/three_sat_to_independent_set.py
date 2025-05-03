@@ -130,7 +130,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
                 var_id = literal.name  # The variable name/ID
                 is_negated = literal.is_negated
                 # for 1:TRUE, get TRUE when using 1 as key
-                assigned_value = sat_assignment[int(var_id)]
+                assigned_value = sat_assignment[var_id]
 
                 self._debug_print(
                     f"    Checking literal {literal} in Clause #{clause_idx}: "

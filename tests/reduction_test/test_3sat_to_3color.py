@@ -11,9 +11,9 @@ def main():
 
     # 2) Load a CNF formula into ThreeSATProblem
     clauses = [
-        [(1, False), (2, True),  (3, True )],  # (¬x1 ∨ x2 ∨ x3)
-        [(1, True ), (2, False), (3, True )],  # ( x1 ∨ ¬x2 ∨ x3)
-        [(1, False), (2, True),  (4, True )]   # (¬x1 ∨ x2 ∨ x4)
+        [('x1', False), ('x2', True),  ('x3', True )],  # (¬x1 ∨ x2 ∨ x3)
+        [('x1', True ), ('x2', False), ('x3', True )],  # ( x1 ∨ ¬x2 ∨ x3)
+        [('x1', False), ('x2', True),  ('x4', True )]   # (¬x1 ∨ x2 ∨ x4)
     ]
     three_sat.load_formula_from_tuples(clauses)
     # three_sat.load_formula_from_file("data/sampleFormula.txt")  # Provide correct file path
@@ -23,7 +23,7 @@ def main():
     reduction.build_graph_from_formula()
 
     # 4) Pick an example SAT assignment
-    sat_assignment = {1: True, 2: True, 3: False, 4: False}
+    sat_assignment = {'x1': True, 'x2': True, 'x3': False, 'x4': False}
 
     # 5) Test forward & reverse
     sat_ok, col_ok = reduction.test_solution(sat_assignment)
