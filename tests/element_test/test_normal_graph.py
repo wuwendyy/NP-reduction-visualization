@@ -26,11 +26,11 @@ if __name__ == "__main__":
         for j in range(i + 1, node_count):
             n = random.random()
             if n > 0.5:
-                edges.add(Edge(i, node_list[i], node_list[j]))
+                edges.add(Edge(node_list[i], node_list[j]))
 
     # Initialize and display the graph with bounding box and node radius
     graph = Graph(nodes=nodes, edges=edges, groups=groups, node_radius=20)
-    graph.determine_node_positions_nx()
+    graph.determine_node_positions()
     # start pygame:
     pygame.init()
     screen = pygame.display.set_mode((600, 600))
