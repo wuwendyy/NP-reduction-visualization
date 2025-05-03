@@ -15,7 +15,7 @@ from npvis.element.graph.graph_drawing_utils import (
     is_inside_circle
 )
 from npvis.element.color import LIGHTGREY
-from npvis.const import DATA_DIR
+from path import DATA_DIR
 from pathlib import Path
 
 class Graph(Element):

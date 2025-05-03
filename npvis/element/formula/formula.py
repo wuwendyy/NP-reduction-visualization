@@ -4,7 +4,7 @@ from npvis.element.formula.clause import Clause
 from npvis.element.formula.variable import Variable
 from npvis.element.element import Element
 from npvis.element.color import LIGHTGREY
-from npvis.const import DATA_DIR
+from path import DATA_DIR
 from pathlib import Path
 
 class Formula(Element):
