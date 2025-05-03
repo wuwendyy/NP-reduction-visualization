@@ -4,14 +4,7 @@ class Reduction:
     def __init__(self, problem1, problem2):
         self.problem1 = problem1
         self.problem2 = problem2
-        self.input1_to_input2_pairs = [] #ref_to_set(ref)
-        self.input1_to_input2_pairs = []  # ref_to_set(ref)
-        self.output1_to_output2_pairs = []
-        self.output2_to_output1_pairs = []
         self.input1_to_input2_dict = {}  # map input 1 to set of input 2
-        # self.input2_to_input1_dict = {}
-        # self.output1_to_output2_pairs_dict = {}
-        # self.output2_to_output1_pairs_dict = {}
         self.highlighted = []  # keep track of highlighted items for resetting
 
     '''
