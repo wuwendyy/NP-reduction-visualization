@@ -15,6 +15,8 @@ from npvis.element.graph.graph_drawing_utils import (
     is_inside_circle
 )
 from npvis.element.color import LIGHTGREY
+from npvis.const import DATA_DIR
+from pathlib import Path
 
 class Graph(Element):
     """
@@ -56,7 +58,7 @@ class Graph(Element):
     def add_edge(self, edge: Edge):
         self.edges.add(edge)
 
-    def add_group(self, nodes: [Node]):
+    def add_group(self, nodes: [Node]): # type: ignore
         # TODO
         pass
 
@@ -201,11 +203,15 @@ class Graph(Element):
     Read in nodes, edges, and groups from a file
     '''
     def parse(self, filename):
-        with open(filename, 'r') as file:
+        filepath = Path(DATA_DIR) / filename
+        if not filepath.exists():
+            raise FileNotFoundError(f"File {filename} not found in {DATA_DIR}")
+        
+        with open(filepath, 'r') as file:
             self.nodes = set()  # Ensure fresh
             self.edges = set()
             self.groups = []
-            with open(filename, "r") as file:
+            with open(filepath, "r") as file:
                 counter = 0
                 for line in file:
                     pass

@@ -4,6 +4,8 @@ from npvis.element.formula.clause import Clause
 from npvis.element.formula.variable import Variable
 from npvis.element.element import Element
 from npvis.element.color import LIGHTGREY
+from npvis.const import DATA_DIR
+from pathlib import Path
 
 class Formula(Element):
     def __init__(self, bounding_box=np.array([[50, 50], [550, 550]])):
@@ -32,8 +34,12 @@ class Formula(Element):
         self.clauses = []
         counter = 0
         variable_counter = 1  # Unique variable ID
+        
+        filepath = Path(DATA_DIR) / filename
+        if not filepath.exists():
+            raise FileNotFoundError(f"File {filename} not found in {DATA_DIR}")
 
-        with open(filename, "r") as f:
+        with open(filepath, "r") as f:
             formula_text = f.read().strip()
             clause_texts = formula_text.split("AND")
 

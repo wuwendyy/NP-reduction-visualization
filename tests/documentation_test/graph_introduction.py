@@ -14,7 +14,7 @@ if __name__ == "__main__":
     # Initialize formula and parse from file
     graph_bounding_box = np.array([[100, 100], [400, 400]])
     graph = Graph(set(), set(), None, graph_bounding_box)
-    graph.parse("data/sampleGraph.txt")  # Provide correct file path
+    graph.parse("sampleGraph.txt")  # Provide correct file path
 
     # After a graph is read in, its nodes need to be assigned positions
     # the determine_node_positions() function will automatically assign each node a position
@@ -24,7 +24,7 @@ if __name__ == "__main__":
     # It is possible to further customize graphs with grouping and color options
     custom_graph_bounding_box = np.array([[500, 100], [800, 400]])
     customized_graph = Graph(set(), set(), None, custom_graph_bounding_box)
-    customized_graph.parse("data/sampleGraphGroups.txt")
+    customized_graph.parse("sampleGraphGroups.txt")
     customized_graph.determine_node_positions()
 
     # the color of each node can be changed individually

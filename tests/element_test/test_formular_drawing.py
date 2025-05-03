@@ -14,7 +14,7 @@ if __name__ == "__main__":
     # Initialize formula and parse from file
     formula_bb = np.array([[20,  50], [380, 750]])
     formula = Formula(formula_bb)
-    formula.parse("data/sampleFormula.txt")  # Provide correct file path
+    formula.parse("sampleFormula.txt")  # Provide correct file path
 
     running = True
     while running:

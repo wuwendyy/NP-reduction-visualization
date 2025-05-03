@@ -16,7 +16,7 @@ def main():
         [('x1', False), ('x2', True),  ('x4', True )]   # (¬x1 ∨ x2 ∨ x4)
     ]
     three_sat.load_formula_from_tuples(clauses)
-    # three_sat.load_formula_from_file("data/sampleFormula.txt")  # Provide correct file path
+    # three_sat.load_formula_from_file("sampleFormula.txt")  # Provide correct file path
 
     # 3) Create and build the reduction
     reduction = ThreeSatToThreeColoringReduction(three_sat, three_col, debug=False)

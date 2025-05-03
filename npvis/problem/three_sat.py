@@ -16,8 +16,6 @@ class ThreeSATProblem(NPProblem):
         self.element.load_formula_from_tuples(list_of_clause_tuples)
         
     def load_formula_from_file(self, filename: str):
-        if not os.path.exists(filename):
-            raise FileNotFoundError(f"The file {filename} does not exist.")
         self.element.parse(filename)
 
     def evaluate(self, assignment) -> bool:

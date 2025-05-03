@@ -39,7 +39,7 @@ graph.determine_node_positions()
 
 # Initialize formula and parse from file
 formula = Formula(formula_bb)
-formula.parse("data/sampleFormula.txt")  # Provide correct file path
+formula.parse("sampleFormula.txt")  # Provide correct file path
 
 # Main loop
 running = True
