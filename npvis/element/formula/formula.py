@@ -76,7 +76,7 @@ class Formula(Element):
         for clause_tuples in list_of_clause_tuples:
             clause_obj = Clause(clause_id)
             for (var_id, is_not_negated) in clause_tuples:
-                variable_obj = Variable(str(var_id), not is_not_negated, clause_id, variable_id)
+                variable_obj = Variable(var_id, not is_not_negated, clause_id, variable_id)
                 variable_id += 1
                 clause_obj.add_variable(variable_obj)
             self.clauses.append(clause_obj)

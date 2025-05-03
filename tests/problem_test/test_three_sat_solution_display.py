@@ -10,11 +10,11 @@ def main():
 
     # Load formula into ThreeSATProblem
     clauses = [
-        [(1, False), (2, True), (3, True)],
-        [(1, True), (2, False), (3, True)],
-        [(1, False), (2, True), (4, True)]
+        [(1, False), (2, True), (3, True)],  # (¬x1 ∨ x2 ∨ x3)
+        [(1, True), (2, False), (3, True)],  # (x1 ∨ ¬x2 ∨ x3)
+        [(1, False), (2, True), (4, True)],  # (¬x1 ∨ x2 ∨ x4)
     ]
-    three_sat_problem.load_formula(clauses)
+    three_sat_problem.load_formula_from_tuples(clauses)
 
     # Example assignment
     sat_assignment = {1: True, 2: True, 3: False, 4: False}

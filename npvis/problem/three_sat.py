@@ -1,3 +1,4 @@
+import os
 from npvis.element import Formula, Variable, Clause
 from npvis.problem.np_problem import NPProblem
 
@@ -13,34 +14,11 @@ class ThreeSATProblem(NPProblem):
     
     def load_formula_from_tuples(self, list_of_clause_tuples):
         self.element.load_formula_from_tuples(list_of_clause_tuples)
-            
-    def add_clause(self, literals) -> None:
-        """
-        Adds a clause to the formula.
-
-        Args:
-            literals (list): A list of tuples (var_id, is_negated).
-                             E.g., [(1, True), (2, False), (3, True)]
-        """
-        clause_idx = len(self.element.clauses) + 1
-        clause_obj = Clause(clause_idx)
-
-        for lit_id, (var_id, is_negated) in enumerate(literals, start=1):
-            variable = Variable(var_id, is_negated, clause_idx, lit_id)
-            clause_obj.add_variable(variable)
-
-        self.element.clauses.append(clause_obj)
-
-    def load_formula(self, clause_list) -> None:
-        """
-        Bulk-loads a set of clauses into the formula.
-
-        Args:
-            clause_list (list): Each item is a list of (var_id, is_negated).
-                                E.g., [[(1, False), (2, True), (3, True)], ...]
-        """
-        for clause in clause_list:
-            self.add_clause(clause)
+        
+    def load_formula_from_file(self, filename: str):
+        if not os.path.exists(filename):
+            raise FileNotFoundError(f"The file {filename} does not exist.")
+        self.element.parse(filename)
 
     def evaluate(self, assignment) -> bool:
         """

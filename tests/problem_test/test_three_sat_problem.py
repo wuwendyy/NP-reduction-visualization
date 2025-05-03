@@ -11,8 +11,8 @@ def test_single_clause():
     """
     print("\n[TEST] Single Clause")
     problem = ThreeSATProblem()
-    problem.load_formula([
-        [(1, True), (2, False)]
+    problem.load_formula_from_tuples([
+        [(1, False), (2, True)]  # (¬x1 ∨ x2)
     ])
 
     # Evaluate some assignments
