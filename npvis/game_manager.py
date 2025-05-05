@@ -50,7 +50,8 @@ class GameManager:
                     if not self.show_solution:
                         for problem, _ in self.problems:
                             problem.disable_solution()
-                        self.reduction.display_input_to_input(self.clicked)
+                        if self.reduction is not None:
+                            self.reduction.display_input_to_input(self.clicked)
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 for problem, bounding_box in self.problems:

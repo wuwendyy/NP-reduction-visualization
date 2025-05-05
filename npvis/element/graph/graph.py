@@ -235,3 +235,5 @@ class Graph(Element):
                         counter += 1
                         self.nodes.add(n)
                         self.node_dict[line] = n  # append to node_dict for future lookup
+
+        self.determine_node_positions()

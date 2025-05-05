@@ -71,26 +71,26 @@ class IndependentSetProblem(NPProblem):
         return self.element
     
     def set_solution_by_id(self, solution):
-        indepent_set = set()
+        independent_set = set()
         other_set = set()
         for node in self.element.nodes:
             node_id = node.id
             if node_id in solution:
-                indepent_set.add(node)
+                independent_set.add(node)
             else:
                 other_set.add(node)
-        sol = [indepent_set, other_set]
+        sol = [independent_set, other_set]
         self.solution = sol
     
     def set_solution(self, solution):
-        indepent_set = set()
+        independent_set = set()
         other_set = set()
         for node in self.element.nodes:
             if node in solution:
-                indepent_set.add(node)
+                independent_set.add(node)
             else:
                 other_set.add(node)
-        sol = [indepent_set, other_set]
+        sol = [independent_set, other_set]
         self.solution = sol
 
 

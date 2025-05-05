@@ -3,6 +3,9 @@ import numpy as np
 import math
 from npvis.element import Formula
 
+from npvis.element.color import LIGHTGREY, LIGHTPINK
+
+
 # Test code for formular display
 if __name__ == "__main__":
     # Test Formula class parsing and display
@@ -12,9 +15,14 @@ if __name__ == "__main__":
     clock = pygame.time.Clock()
 
     # Initialize formula and parse from file
-    formula_bb = np.array([[20,  50], [380, 750]])
+    formula_bb = np.array([[20,  50], [380, 380]])
     formula = Formula(formula_bb)
     formula.parse("sampleFormula.txt")  # Provide correct file path
+
+    formula.clauses[0].color = LIGHTPINK
+    formula.clauses[1].variables[0].color = LIGHTPINK
+    formula.clauses[1].variables[1].color = LIGHTPINK
+    formula.clauses[1].variables[2].color = LIGHTPINK
 
     running = True
     while running:

@@ -11,21 +11,15 @@ if __name__ == "__main__":
     pygame.display.set_caption("Graph Display Test")
     clock = pygame.time.Clock()
 
-    # Initialize formula and parse from file
+    # Initialize graph and parse from file
     graph_bounding_box = np.array([[100, 100], [400, 400]])
     graph = Graph(set(), set(), None, graph_bounding_box)
     graph.parse("sampleGraph.txt")  # Provide correct file path
 
-    # After a graph is read in, its nodes need to be assigned positions
-    # the determine_node_positions() function will automatically assign each node a position
-    # these nodes are spread out to minimize edge intersections
-    graph.determine_node_positions()
-
-    # It is possible to further customize graphs with grouping and color options
+    # It is possible to customize graphs with grouping and color options
     custom_graph_bounding_box = np.array([[500, 100], [800, 400]])
     customized_graph = Graph(set(), set(), None, custom_graph_bounding_box)
     customized_graph.parse("sampleGraphGroups.txt")
-    customized_graph.determine_node_positions()
 
     # the color of each node can be changed individually
     for node in customized_graph.nodes:
