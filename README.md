@@ -5,7 +5,7 @@ A Python-based interactive visualizer for NP-complete problem reductions. This t
 ## 📦 Installation
 
 ### Requirements
-- Python 3.12+
+- Python 3
 - `numpy`
 - `pygame`
 
