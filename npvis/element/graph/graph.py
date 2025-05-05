@@ -234,6 +234,7 @@ class Graph(Element):
                         n = Node(counter, line)
                         counter += 1
                         self.nodes.add(n)
-                        self.node_dict[line] = n  # append to node_dict for future lookup
+                        self.node_dict[line] = n  # append to node_dict for lookup when adding edges/groups
 
+        self._create_node_dictionary()
         self.determine_node_positions()
