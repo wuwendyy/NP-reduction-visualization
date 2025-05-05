@@ -66,20 +66,22 @@ This visualizer allows multiple elements in the 3Color panel to correspond to on
 - `Element`: Abstract class with methods `parse()`, `display()`, and `handle_event()`.
 - `SubElement`: Abstract class used for core visual components such as nodes, edges, variables, and clauses.
 
-#### Node
-Displayed as a circle with:
-- `id`, `name`, `location`, `neighbors`, and visual states.
-- Can be toggled for highlighting and display neighbors.
+### Node: 
+#### [node.py](/npvis/element/graph/node.py)
+Basic Node for a graph
 
-#### Edge
+### Edge
+#### [edge.py](/npvis/element/graph/edge.py)
 Connects two nodes with highlighting behavior.
 
-#### Variable and Clause
+### Variable and Clause
+#### [variable.py](/npvis/element/formula/variable.py) and [clause.py](/npvis/element/formula/clause.py)
 Used in SAT formulas, supporting logical evaluation and color-based visualization.
 
 ---
 
-### Graph
+## Graph
+#### [graph.py](/npvis/element/graph.py) || [sample usage](/tests/documentation/graph_introduction.py)
 Encapsulates visual representation of nodes and edges. 
 Supports grouped node layouts and collision avoidance.
 
@@ -93,15 +95,14 @@ X2
 [X1, X2, X4]
 ```
 
-![Graph Input](documentation_images/elements/graph_input.png)
-
 | Random Graph | Grouped Graph |
 |--------------|---------------|
 | ![](documentation_images/elements/random_graph.png) | ![](documentation_images/elements/grouped_graph.png) |
 
 ---
 
-### Formula
+## Formula
+#### [formula.py](/npvis/element/formula.py) || [sample usage](/tests/documentation/formula_introduction.py)
 Represents a 3SAT-style Boolean formula with text parsing and rendering.
 
 **Input Format:**
@@ -118,6 +119,7 @@ Represents a 3SAT-style Boolean formula with text parsing and rendering.
 ## 🔍 NP_Problem Classes
 
 ### IndependentSetProblem
+#### [independent_set.py](/npvis/problem/independent_set.py)
 Given a graph, verify if selected nodes form a valid independent set (no two connected). Supports evaluation and visual feedback.
 
 | Default | With Solution |
@@ -125,8 +127,10 @@ Given a graph, verify if selected nodes form a valid independent set (no two con
 | ![](documentation_images/problems/default_IS.png) | ![](documentation_images/problems/solution_IS.png) |
 
 ---
+for usage example: 
 
 ### ThreeSATProblem
+#### [three_sat.py](/npvis/problem/three_sat.py)
 Evaluates whether a Boolean formula with 3-literal clauses can be satisfied.
 
 ---
