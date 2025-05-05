@@ -1,6 +1,6 @@
 # NP Reduction Visualizer
 
-A Python-based interactive visualizer for NP-complete problem reductions. This tool provides dynamic visualizations of problem instances and their corresponding reductions, such as 3SAT → Independent Set and 3SAT → 3-Coloring.
+A Python-based interactive visualizer for NP-complete problem reductions. This tool provides dynamic visualizations of problem instances and their corresponding reductions, such as 3SAT → Independent Set and 3SAT → 3-Coloring. For detailed documentation, see Documentation.pdf in the repository. 
 
 ## 📦 Installation
 
