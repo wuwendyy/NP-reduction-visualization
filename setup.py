@@ -9,5 +9,6 @@ setup(
         "networkx",
         "matplotlib",
         "numpy",
+        "pathlib",
     ],
 )
