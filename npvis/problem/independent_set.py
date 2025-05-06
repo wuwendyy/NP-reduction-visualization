@@ -11,40 +11,6 @@ class IndependentSetProblem(NPProblem):
         super().__init__(Graph())
         self.next_node_id = 1
 
-    def add_node(self, name=None) -> Node:
-        assert name == None or isinstance(name, str), "Name must be a string."
-        assert len(name) <= 10, "Name must be at most 10 characters long."
-        
-        node_name = name if name else str(self.next_node_id)
-        node = Node(self.next_node_id, node_name)
-        self.element.add_node(node)
-        self.next_node_id += 1
-        return node
-
-    def add_edge(self, node1, node2) -> None:
-        """
-        Adds an edge between two nodes in the graph.
-        """
-        assert node1 != None, "Node 1 is None."
-        assert node2 != None, "Node 2 is None."
-        assert node1 != node2, "Cannot add an edge between the same node."
-        assert node1 in self.element.nodes, "Node 1 is not in the graph."
-        assert node2 in self.element.nodes, "Node 2 is not in the graph."
-        
-        edge = Edge(node1, node2)
-        self.element.add_edge(edge)
-        
-    def add_group(self, nodes) -> None:
-        """
-        Adds a group of nodes to the graph.
-        """
-        assert len(nodes) > 0, "Group must contain at least one node."
-        assert len(set(nodes)) == len(nodes), "Group contains duplicate nodes."
-        for node in nodes:
-            assert node in self.element.nodes, "Node is not in the graph."
-        
-        self.element.groups.append(nodes)
-
     def evaluate(self, node_ids) -> bool:
         """
         Checks if node_ids form an independent set in this graph.
@@ -95,14 +61,14 @@ class IndependentSetProblem(NPProblem):
 
 
 
-if __name__ == "__main__":
-    ind_set_problem = IndependentSetProblem()
-    n1 = ind_set_problem.add_node("A")
-    n2 = ind_set_problem.add_node("B")
-    n3 = ind_set_problem.add_node("C")
-
-    ind_set_problem.add_edge(n1, n2)
-    ind_set_problem.add_edge(n2, n3)
-
-    test_set = {n1.id, n3.id}
-    print("Is it independent?", ind_set_problem.evaluate(test_set))  # Expect True
+# if __name__ == "__main__":
+#     ind_set_problem = IndependentSetProblem()
+#     n1 = ind_set_problem.add_node("A")
+#     n2 = ind_set_problem.add_node("B")
+#     n3 = ind_set_problem.add_node("C")
+#
+#     ind_set_problem.add_edge(n1, n2)
+#     ind_set_problem.add_edge(n2, n3)
+#
+#     test_set = {n1.id, n3.id}
+#     print("Is it independent?", ind_set_problem.evaluate(test_set))  # Expect True

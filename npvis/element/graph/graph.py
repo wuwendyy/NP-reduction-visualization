@@ -47,20 +47,51 @@ class Graph(Element):
         ], dtype=float)
 
         self._create_node_dictionary()
+        self.next_node_id = 0
 
     def _create_node_dictionary(self):
         self.node_dict = {node.id: node for node in self.nodes}
 
-    def add_node(self, node: Node):
-        self.nodes.add(node)
-        self._create_node_dictionary()
+    # def add_node(self, node: Node):
+    #     self.nodes.add(node)
+    #     self._create_node_dictionary()
 
-    def add_edge(self, edge: Edge):
+    def add_node(self, name=None) -> Node:
+        assert name is None or isinstance(name, str), "Name must be a string."
+        assert len(name) <= 10, "Name must be at most 10 characters long."
+
+        node_name = name if name else str(self.next_node_id)
+        node = Node(self.next_node_id, node_name)
+        self.nodes.add(node)
+        self.next_node_id += 1
+        return node
+
+    def add_edge(self, node1, node2) -> None:
+        """
+        Adds an edge between two nodes in the graph.
+        """
+        assert node1 != None, "Node 1 is None."
+        assert node2 != None, "Node 2 is None."
+        assert node1 != node2, "Cannot add an edge between the same node."
+        assert node1 in self.nodes, "Node 1 is not in the graph."
+        assert node2 in self.nodes, "Node 2 is not in the graph."
+
+        edge = Edge(node1, node2)
         self.edges.add(edge)
 
-    def add_group(self, nodes: [Node]): # type: ignore
-        # TODO
-        pass
+        node1.add_neighbor(node2.id)
+        node2.add_neighbor(node1.id)
+
+    def add_group(self, nodes) -> None:
+        """
+        Adds a group of nodes to the graph.
+        """
+        assert len(nodes) > 0, "Group must contain at least one node."
+        assert len(set(nodes)) == len(nodes), "Group contains duplicate nodes."
+        for node in nodes:
+            assert node in self.nodes, "Node is not in the graph."
+
+        self.groups.append(nodes)
 
     def hasEdge(self, n1, n2):
         return any((e.node1==n1 and e.node2==n2) or (e.node1==n2 and e.node2==n1)
@@ -206,35 +237,29 @@ class Graph(Element):
         filepath = Path(DATA_DIR) / filename
         if not filepath.exists():
             raise FileNotFoundError(f"File {filename} not found in {DATA_DIR}")
-        
-        with open(filepath, 'r') as file:
-            self.nodes = set()  # Ensure fresh
-            self.edges = set()
-            self.groups = []
-            with open(filepath, "r") as file:
-                counter = 0
-                for line in file:
-                    pass
-                    line = line.strip()
-                    if line[0] == '(':  # edge
-                        names = line[1:-1].split(", ")
-                        node1 = self.node_dict.get(names[0])
-                        node2 = self.node_dict.get(names[1])
-                        e = Edge(node1, node2)
-                        self.edges.add(e)
-                        node1.add_neighbor(node2.id)
-                        node2.add_neighbor(node1.id)
-                    elif line[0] == '[':  # group
-                        names = line[1:-1].split(", ")
-                        group = []
-                        for name in names:
-                            group.append(self.node_dict.get(name))
-                        self.groups.append(group)
-                    else:  # node
-                        n = Node(counter, line)
-                        counter += 1
-                        self.nodes.add(n)
-                        self.node_dict[line] = n  # append to node_dict for lookup when adding edges/groups
+
+        self.nodes = set()  # Ensure fresh
+        self.edges = set()
+        self.groups = []
+
+        with open(filepath, "r") as file:
+            counter = 0
+            for line in file:
+                line = line.strip()
+                if line[0] == '(':  # edge
+                    names = line[1:-1].split(", ")
+                    node1 = self.node_dict.get(names[0])
+                    node2 = self.node_dict.get(names[1])
+                    self.add_edge(node1, node2)
+                elif line[0] == '[':  # group
+                    names = line[1:-1].split(", ")
+                    group = []
+                    for name in names:
+                        group.append(self.node_dict.get(name))
+                    self.add_group(group)
+                else:  # node
+                    node = self.add_node(line)
+                    self.node_dict[line] = node  # append to node_dict for lookup when adding edges/groups
 
         self._create_node_dictionary()
         self.determine_node_positions()

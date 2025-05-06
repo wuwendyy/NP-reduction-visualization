@@ -110,7 +110,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
 
                 # Create a *brand new* node in the target graph whose name is
                 # the repr() of the literal (e.g. 'x₁', '¬x₂').
-                node = self.problem2.add_node(repr(literal))
+                node = self.problem2.element.add_node(repr(literal))
 
                 # Store bidirectional mapping for future conversions / UI.
                 self.input1_to_input2_pairs[literal] = node
@@ -136,7 +136,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
             # exactly 3 literals (3‑CNF) we always create a triangle.
             for i in range(len(clause_nodes)):
                 for j in range(i + 1, len(clause_nodes)):
-                    self.problem2.add_edge(clause_nodes[i], clause_nodes[j])
+                    self.problem2.element.add_edge(clause_nodes[i], clause_nodes[j])
             self._debug_print(f"  Fully connected the nodes within Clause #{c_idx}.")
 
         # -----------------------------------------------------------------
@@ -212,7 +212,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
                 # literal_A.is_negated != literal_B.is_negated  →  False != True ✔︎
                 # Both tests pass, so we add an edge between the two nodes.
                 if literal_A.name == literal_B.name and literal_A.is_negated != literal_B.is_negated:
-                    self.problem2.add_edge(node_A, node_B)
+                    self.problem2.element.add_edge(node_A, node_B)
                     self._debug_print(
                         f"  Connected complementary literals '{literal_A}' ↔ '{literal_B}' "
                         f"via nodes {node_A.id} and {node_B.id}.")
