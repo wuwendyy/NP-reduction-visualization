@@ -116,6 +116,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
                 self.input1_to_input2_pairs[literal] = node
                 self.input2_to_input1_pairs[node] = literal
                 self.add_input1_to_input2_by_pair(literal, node)  # Framework helper
+                self.add_input1_to_input2_by_pair(clause, node)
 
                 # Trace what we just did
                 self._debug_print(f"  -- Added literal/node pair [{literal} : {node}] to maps")
