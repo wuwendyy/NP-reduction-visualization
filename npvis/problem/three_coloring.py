@@ -31,8 +31,7 @@ class ThreeColoringProblem(NPProblem):
         Adds an edge between two nodes.
         """
         # Basic assertions can be added as needed.
-        edge = Edge(node1, node2)
-        self.element.add_edge(edge)
+        self.element.add_edge(node1, node2)
         
     def add_group(self, nodes):
         """

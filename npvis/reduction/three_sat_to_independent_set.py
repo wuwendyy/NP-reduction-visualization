@@ -127,7 +127,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
 
             # ---- 1(b) Tag nodes that belong to the same clause ----------
             # The visualiser can later colour them as a unit (triangle).
-            self.problem2.add_group(clause_nodes)
+            self.problem2.element.add_group(clause_nodes)
             self._debug_print(f"  Added group for Clause #{c_idx}: node IDs {[n.id for n in clause_nodes]}.")
 
             # ---- 1(c) Intra‑clause **clique** --------------------------

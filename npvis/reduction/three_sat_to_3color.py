@@ -19,15 +19,15 @@ class ThreeSatToThreeColoringReduction(Reduction):
         '''
         super().__init__(three_sat_problem, three_col_problem)
         self.DEBUG = debug
-        
+
         '''
         ⭐ Notes on class variables:
         for this reduction, we need to create these nodes from 3-SAT formula
         that's why we want to keep track of them in the class instance.
         '''
         # the 3 “base” nodes
-        self.base_node: Node  = None
-        self.true_node: Node  = None
+        self.base_node: Node = None
+        self.true_node: Node = None
         self.false_node: Node = None
 
         # var_name → (pos_node, neg_node)
@@ -49,7 +49,7 @@ class ThreeSatToThreeColoringReduction(Reduction):
         3) The clause gadgets (for each clause Cₖ)
         See each method for details.
         '''
-        
+
         self._build_color_base()
         self._build_variable_gadgets()
         self._build_clause_gadgets()
@@ -62,7 +62,7 @@ class ThreeSatToThreeColoringReduction(Reduction):
         Three edges enforce them to be colored differently (3-coloring).
         One group allows us to treat them as a single unit when displaying...
         '''
-        col = self.problem2
+        col = self.problem2.element
         B = col.add_node("Base"); T = col.add_node("True"); F = col.add_node("False")
         for u,v in ((B,T),(T,F),(F,B)):
             col.add_edge(u,v)
@@ -81,7 +81,7 @@ class ThreeSatToThreeColoringReduction(Reduction):
         (Currently in display, green is true, red is false, and blue is base.)
         See below comments for details.
         '''
-        col = self.problem2
+        col = self.problem2.element
         names = sorted({
             v.name
             for clause in self.problem1.element.clauses
@@ -91,22 +91,22 @@ class ThreeSatToThreeColoringReduction(Reduction):
             # Add positive and negative nodes for the variable
             p = col.add_node(f"{name}")
             n = col.add_node(f"¬{name}")
-            
+
             # Connect pos and neg nodes => they are different colors
             col.add_edge(p,n)
-            
+
             # Connect both nodes to the base triangle => they are not base color
             col.add_edge(p,self.base_node)
             col.add_edge(n,self.base_node)
             # Thus, they are either true or false.
-            
+
             # Group the variable gadget nodes together for display
             col.add_group([p,n])
-            
+
             # Store the variable nodes in the class instance
             self.var_nodes[name] = (p,n)
             self._debug(f"Var gadget {name}:", p.id, n.id)
-        
+
         '''
         Here, this is also for display...
         We want to allow click→highlight on all variable nodes from each clause
@@ -117,7 +117,7 @@ class ThreeSatToThreeColoringReduction(Reduction):
             for lit in clause.variables:
                 # We retrieve the positive and negative nodes for the variable
                 p, n = self.var_nodes[lit.name]
-                
+
                 # Add input-to-input mapping for display (this method comes from the base reduction class)
                 self.add_input1_to_input2_by_pair(lit, p)
                 self.add_input1_to_input2_by_pair(lit, n)
@@ -161,7 +161,7 @@ class ThreeSatToThreeColoringReduction(Reduction):
                 - out12: output node of the OR gadget
             '''
             g1_12, g2_12, out12 = self._build_or_gadget(lnodes[0], lnodes[1])
-            
+
             '''
             Similarly, we connect the output of the first OR gadget to the third literal's node.
             Now, we use two 'OR gadgets' to ensure that if any of the literals are true,
@@ -190,7 +190,7 @@ class ThreeSatToThreeColoringReduction(Reduction):
                 ([g1_12, g2_12, out12],
                  [g1_123, g2_123, out123])
             )
-            
+
             '''
             This is also for display...
             If the user clicks on the entire clause, we want to highlight these created OR gadgets
@@ -198,7 +198,7 @@ class ThreeSatToThreeColoringReduction(Reduction):
             for or_node in (g1_12, g2_12, out12, g1_123, g2_123, out123):
                 self.add_input1_to_input2_by_pair(clause, or_node)
 
-            self._debug(f"Clause#{ci} gadgets:", 
+            self._debug(f"Clause#{ci} gadgets:",
                         [g1_12.id, g2_12.id, out12.id,
                          g1_123.id, g2_123.id, out123.id])
 
@@ -225,15 +225,15 @@ class ThreeSatToThreeColoringReduction(Reduction):
           g2: internal node connected to `b`.
           out: output node of the OR gadget.
         '''
-        col = self.problem2
-        g1  = col.add_node("in1") 
-        g2  = col.add_node("in2") 
+        col = self.problem2.element
+        g1  = col.add_node("in1")
+        g2  = col.add_node("in2")
         out = col.add_node("out")
-        
+
         # connect the two inputs to the internal nodes
         col.add_edge(g1, a)
         col.add_edge(g2, b)
-        
+
         # fully interconnect the trio
         col.add_edge(g1, g2)
         col.add_edge(g2, out)
@@ -341,7 +341,7 @@ class ThreeSatToThreeColoringReduction(Reduction):
             # assign the second OR-gadget
             for node, target_set in zip((g1_123, g2_123, out123), class123):
                 target_set.add(node)
-        
+
         '''
         Finally, we return the three sets of nodes.
         Notice that we abstract "solution" as a list of set of element objects.

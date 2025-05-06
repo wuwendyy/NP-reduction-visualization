@@ -58,17 +58,3 @@ class IndependentSetProblem(NPProblem):
                 other_set.add(node)
         sol = [independent_set, other_set]
         self.solution = sol
-
-
-
-# if __name__ == "__main__":
-#     ind_set_problem = IndependentSetProblem()
-#     n1 = ind_set_problem.add_node("A")
-#     n2 = ind_set_problem.add_node("B")
-#     n3 = ind_set_problem.add_node("C")
-#
-#     ind_set_problem.add_edge(n1, n2)
-#     ind_set_problem.add_edge(n2, n3)
-#
-#     test_set = {n1.id, n3.id}
-#     print("Is it independent?", ind_set_problem.evaluate(test_set))  # Expect True

@@ -28,5 +28,10 @@ class Clause(SubElement):
         self.color = self.default_color
 
     def evaluate(self, solution):
-        return any(solution[v.name] != v.is_negated for v in self.variables)
+        if any(solution[v.name] != v.is_negated for v in self.variables):
+            self.highlight_color = (150, 255, 150)
+            return True
+        self.highlight_color = (255, 150, 150)
+        return False
+        # return any(solution[v.name] != v.is_negated for v in self.variables)
     

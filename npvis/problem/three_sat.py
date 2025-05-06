@@ -75,6 +75,16 @@ class ThreeSATProblem(NPProblem):
         solution = [true_set, false_set]
         super().set_solution(solution)
 
+    def display_solution(self, screen):
+        for clause in self.element.clauses:
+            clause.color = clause.highlight_color
+        super().display_solution(screen)
+
+    def disable_solution(self):
+        for clause in self.element.clauses:
+            clause.color = clause.default_color
+        super().disable_solution()
+
 if __name__ == "__main__":
     # Example usage
     three_sat_problem = ThreeSATProblem()
