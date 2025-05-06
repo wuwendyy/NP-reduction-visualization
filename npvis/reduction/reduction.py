@@ -12,21 +12,21 @@ class Reduction:
     '''
 
     def input1_to_input2(self):
-        pass
+        raise NotImplementedError
 
     '''
-    method to populate output1_to_output2_pairs list
+    method to map solution of problem1 to a solution in problem2
     '''
 
     def solution1_to_solution2(self):
-        pass
+        raise NotImplementedError
 
     '''
-    method to populate output2_to_output1_pairs list
+    method to map solution of problem2 to a solution in problem1
     '''
 
     def solution2_to_solution1(self):
-        pass
+        raise NotImplementedError
 
     '''
     method to populate input_to_input by adding one pair of correspondance
@@ -79,7 +79,7 @@ class Reduction:
                 if clicked_set <= value: # clicked set is a subset 
                     print("find input 1")
                     
-                    # Note: emperically, a steeper ratio seems help visualization
+                    # Note: empirically, a steeper ratio seems help visualization
                     ratio = (1 - len(clicked_set) / len(value)) ** 3
                     lighter_color = lighten_rgb((255, 0, 0), ratio)
                     key.change_color(lighter_color)

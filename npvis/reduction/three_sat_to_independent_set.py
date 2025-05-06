@@ -79,7 +79,6 @@ class ThreeSatToIndependentSetReduction(Reduction):
     # Utility printing helper
     # ---------------------------------------------------------------------
     def _debug_print(self, msg: str):
-        """Emit *msg* prefixed with [DEBUG] iff self.DEBUG is *True*."""
         if self.DEBUG:
             print("[DEBUG]", msg)
 
