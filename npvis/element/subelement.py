@@ -10,7 +10,7 @@ class SubElement:
         self.highlight_color = highlight_color
         self.selected = selected
 
-    def toggle_highlight(self, highlight_color=LIGHTPINK):
+    def toggle_highlight(self):
         if self.color == self.default_color:
             self.color = self.highlight_color
         else:

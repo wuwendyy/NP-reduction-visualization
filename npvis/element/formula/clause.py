@@ -4,13 +4,9 @@ from npvis.element.color import LIGHTGREY, LIGHTPINK
 
 class Clause(SubElement):
     def __init__(self, clause_id: int):
-        SubElement.__init__(self, clause_id, clause_id)
+        SubElement.__init__(self, clause_id, clause_id, LIGHTGREY)
         self.variables = []
         self.clause_id = clause_id
-        
-        # default & current background color
-        self.default_color = LIGHTGREY  # very light grey
-        self.color = self.default_color
 
     def __repr__(self):
         line = "Clause " + str(self.clause_id) + ": "

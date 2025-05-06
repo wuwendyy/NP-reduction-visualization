@@ -7,7 +7,7 @@ class Node(SubElement):
     neighbors = []  # store all neighbor node_id
 
     def __init__(self, id, name, color=LIGHTBLUE, location=np.array([0, 0])):
-        super().__init__(id, name, color)
+        super().__init__(id, name, color, LIGHTPINK)
         self.location = location
 
     def change_color(self, new_color):
