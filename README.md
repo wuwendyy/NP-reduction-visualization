@@ -49,7 +49,7 @@ Clicking an element in either panel highlights corresponding elements in the oth
 ### 3SAT → 3Coloring
 Run:
 ```bash
-python -m tests.reduction_test.test_3color_to_3sat
+python -m tests.reduction_test.test_3sat_to_3color
 ```
 
 This visualizer allows multiple elements in the 3Color panel to correspond to one 3SAT clause. The more elements you select, the brighter the clause's highlight.
