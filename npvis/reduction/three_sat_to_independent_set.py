@@ -1,12 +1,9 @@
 # --------------------------------------------------
-# This module implements the classic reduction from 3‑SAT to INDEPENDENT‑SET
-# in a graph.  It is written to be **pedagogical first**: every logical chunk
-# is explained so that a reader who is new to reductions or to this code base
-# can follow the flow without jumping between files.
+# This module implements the reduction from 3‑SAT to INDEPENDENT‑SET
 #
 # The public API surfaced by the class `ThreeSatToIndependentSetReduction` is:
 #
-#   * build_graph_from_formula() ― create the target graph given a 3‑CNF
+#   * input1_to_input2() ― create the target graph given a 3‑CNF
 #   * solution1_to_solution2()  ― turn a SAT assignment into an ind.‑set
 #   * solution2_to_solution1()  ― recover a SAT assignment from an ind.‑set
 #   * test_solution()           ― quick helper to verify both directions.
@@ -22,22 +19,19 @@ from npvis.problem.three_sat import ThreeSATProblem
 
 
 class ThreeSatToIndependentSetReduction(Reduction):
-    """Concrete Reduction: **3‑SAT → INDEPENDENT‑SET**
+    """Concrete Reduction: 3‑SAT → INDEPENDENT‑SET
 
-    The high‑level idea of the reduction is the standard one taught in any
-    introductory complexity course:
-
-    1.  For every clause *(ℓ₁ ∨ ℓ₂ ∨ ℓ₃)* create **three nodes** – one per
-        *literal occurrence* – and **fully connect** them so that at most one
+    1.  For every clause *(ℓ₁ ∨ ℓ₂ ∨ ℓ₃)* create three nodes – one per
+        literal occurrence – and fully connect them so that at most one
         of them can be picked into an independent set.
     2.  For every pair of complementary literals that appear in the formula
-        (e.g. *x* and *¬x* in *different* clauses) connect the corresponding
+        (e.g. x and ¬x in different clauses) connect the corresponding
         nodes.  This prevents a satisfying assignment from picking both.
-    3.  The number *k* for the Independent‑Set instance is simply the number
+    3.  The number k for the Independent‑Set instance is simply the number
         of clauses; a satisfying assignment lets us pick exactly one literal
-        per clause, hence *k* nodes in total.
+        per clause, hence k nodes in total.
 
-    This class provides *bidirectional* conversions so the visualiser can
+    This class provides bidirectional conversions so the visualiser can
     highlight how solutions correspond.
     """
 
@@ -54,7 +48,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
         Parameters
         ----------
         three_sat_problem : ThreeSATProblem
-            The *source* instance (ϕ) in 3‑CNF we want to reduce.
+            The source instance in 3‑CNF we want to reduce.
         ind_set_problem   : IndependentSetProblem
             The *target* graph G (initially empty – nodes/edges added later).
         debug : bool, optional
@@ -62,15 +56,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
         """
         super().__init__(three_sat_problem, ind_set_problem)
 
-        # -----------------------------------------------------------------
-        # Forward / backward maps — they let the GUI jump between layers.
-        # Each map stores **single objects** so we can colour a literal *xᵢ*
-        # and immediately know which graph node to flash (and vice‑versa).
-        # -----------------------------------------------------------------
         self.input1_to_input2_pairs = {}  # SAT‑literal  → graph‑node
-        self.input2_to_input1_pairs = {}  # graph‑node   → SAT‑literal
-        self.output1_to_output2_pairs = {}  # sat solution → ind‑set node
-        self.output2_to_output1_pairs = {}  # ind‑set node → sat literal
 
         # Whether debug printing is enabled.
         self.DEBUG = debug
@@ -85,38 +71,33 @@ class ThreeSatToIndependentSetReduction(Reduction):
     # ---------------------------------------------------------------------
     # 1.  Build the target graph G from the 3‑SAT formula ϕ
     # ---------------------------------------------------------------------
-    def build_graph_from_formula(self) -> None:
+    def input1_to_input2(self) -> None:
         """Populate *self.problem2* (an IndependentSetProblem) with nodes and
         edges so that **Independent‑Set(G, k=len(clauses))** is equivalent to
         the original **3‑SAT(ϕ)** instance.
         """
         # -- Grab the list of (clause, literals) objects -------------------
-        self._debug_print("Starting build_graph_from_formula…")
+        self._debug_print("Starting input1_to_input2…")
         formula_list = self.problem1.element.clauses
         self._debug_print(f"Retrieved formula_list with {len(formula_list)} clause(s).")
 
         # Iterate over each clause *Cⱼ* and perform steps (node creation &
         # intra‑clause clique).
         for c_idx, clause in enumerate(formula_list, start=1):
-            # Pretty banner for human readers
             self._debug_print(f"Processing Clause #{c_idx} with {len(clause.variables)} variable(s).")
 
-            clause_nodes = []      # Nodes we create for this clause
-            clause_fs    = set()   # Literal objects for GUI cross‑highlighting
+            clause_nodes = []   # Nodes we create for this clause
 
             # ---- 1(a) Node creation ------------------------------------
             for literal in clause.variables:
-                clause_fs.add(literal)  # Remember for group mapping later
-
                 # Create a *brand new* node in the target graph whose name is
                 # the repr() of the literal (e.g. 'x₁', '¬x₂').
                 node = self.problem2.element.add_node(repr(literal))
 
                 # Store bidirectional mapping for future conversions / UI.
                 self.input1_to_input2_pairs[literal] = node
-                self.input2_to_input1_pairs[node] = literal
-                self.add_input1_to_input2_by_pair(literal, node)  # Framework helper
-                self.add_input1_to_input2_by_pair(clause, node)
+                self.add_input1_to_input2_by_pair(literal, node)    # clicking the literal will highlight the node
+                self.add_input1_to_input2_by_pair(clause, node)     # clicking the clause will highlight the node
 
                 # Trace what we just did
                 self._debug_print(f"  -- Added literal/node pair [{literal} : {node}] to maps")
@@ -126,7 +107,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
                 clause_nodes.append(node)
 
             # ---- 1(b) Tag nodes that belong to the same clause ----------
-            # The visualiser can later colour them as a unit (triangle).
+            # The visualiser will later display them as a unit (triangle).
             self.problem2.element.add_group(clause_nodes)
             self._debug_print(f"  Added group for Clause #{c_idx}: node IDs {[n.id for n in clause_nodes]}.")
 
@@ -142,43 +123,27 @@ class ThreeSatToIndependentSetReduction(Reduction):
         # -----------------------------------------------------------------
         # 2.  Inter‑clause edges between *complementary* literals
         #     (x  vs  ¬x) so they cannot both be selected in the IS.
-        # Goal  For every variable xᵢ we create an edge between *each* positive
+        #       For every variable xᵢ we create an edge between *each* positive
         #        occurrence (xᵢ) and *each* negative occurrence (¬xᵢ) that live
-        #        in **different** clauses.  This guarantees the graph never lets
+        #        in different clauses.  This guarantees the graph never lets
         #        us pick both literal‑nodes for the same variable, because that
         #        would violate the “independent‑set” property.
         #
-        # 👉  Mini‑example
         # ------------------------------------------------------------------
-        #    Formula:      (x ∨ y ∨ ¬z) ∧ (¬x ∨ ¬y ∨ z)
-        #
-        #    Literal list in one pass through `items` might look like:
-        #        i=0 :  literal_A =  x   , node_A = v₀
-        #        i=1 :  literal_A =  y   , node_A = v₁
-        #        i=2 :  literal_A =  ¬z  , node_A = v₂
-        #        i=3 :  literal_A =  ¬x  , node_A = v₃
-        #        i=4 :  literal_A =  ¬y  , node_A = v₄
-        #        i=5 :  literal_A =   z  , node_A = v₅
-        #
-        #    • Keys we create
-        #        'x'      → { x  }              ('x' positive bucket)
-        #        'x_neg'  → { ¬x }              ('x' negative bucket)
-        #        … and similarly for y / z
-        #
-        #    • Edges added
+        #   Example:      (x ∨ y ∨ z) ∧ (¬x ∨ ¬y ∨ z)
+        #   Because x and ¬x can not both be true, we need to ensure in the independent
+        #   set that node x and node ¬x will not both be selected
+        #    Edges added
         #        v₀  —  v₃    (x  ↔ ¬x)
         #        v₁  —  v₄    (y  ↔ ¬y)
-        #        v₂  —  v₅    (¬z ↔  z)
         # -----------------------------------------------------------------
         self._debug_print("Connecting complementary literal occurrences across clauses…")
 
         # Because we need to cross‑compare every literal against *later* ones
-        # we copy the items into a list first (O(m²) but m=3·|clauses|, fine).
         # input1_to_input2_pairs :  { literal_obj → node_obj }
         items = list(self.input1_to_input2_pairs.items())
         #               └───┬───┘
-        #           each element is  (literal, node)
-
+        #           each item is  (literal, node)
 
         # These helper dicts collect **all** positive / negative occurrences
         # so the GUI can colour or highlight them together later.
@@ -193,8 +158,8 @@ class ThreeSatToIndependentSetReduction(Reduction):
             #     'x_neg'  → negative literal ¬x
             name = literal_A.name if not literal_A.is_negated else f"{literal_A.name}_neg"
 
-            # Record this literal / node under its bucket for later GUI use
-            name_literal_dict.setdefault(name, set()).add(literal_A)
+            # Record this literal / node under its bucket for later use
+            # name_literal_dict.setdefault(name, set()).add(literal_A)
             name_node_dict.setdefault(name, set()).add(node_A)
 
             # Compare with every *later* literal_B (j > i) so each pair is handled once
@@ -217,20 +182,20 @@ class ThreeSatToIndependentSetReduction(Reduction):
                         f"  Connected complementary literals '{literal_A}' ↔ '{literal_B}' "
                         f"via nodes {node_A.id} and {node_B.id}.")
                     
-        # The gathered *same‑sign* buckets are now inserted into helper maps
-        # so the visualiser can flash *all* positive occurrences of x together.
-        for name, literals in name_literal_dict.items():
-            # (Framework call omitted – uncomment if the UI expects it)
-            self._debug_print(
-                f"  -- Added same_name_literals/same_name_nodes pair "
-                f"[{literals} : {name_node_dict[name]}] to maps")
+        # # The gathered *same‑sign* buckets are now inserted into helper maps
+        # # so the visualiser can flash *all* positive occurrences of x together.
+        # for name, literals in name_literal_dict.items():
+        #     # (Framework call omitted – uncomment if the UI expects it)
+        #     self._debug_print(
+        #         f"  -- Added same_name_literals/same_name_nodes pair "
+        #         f"[{literals} : {name_node_dict[name]}] to maps")
 
-        self._debug_print("Finished build_graph_from_formula.\n")
+        self._debug_print("Finished input1_to_input2.\n")
 
     # ---------------------------------------------------------------------
     # 3.  Convert SAT‑assignment → Independent Set
     # ---------------------------------------------------------------------
-    def solution1_to_solution2(self, sat_assignment):
+    def solution1_to_solution2(self):
         """Given a satisfying *sat_assignment* (dict var→bool) return the set
         of graph nodes that constitutes the corresponding **independent set**.
 
@@ -240,7 +205,10 @@ class ThreeSatToIndependentSetReduction(Reduction):
         • Because complementary literals are connected, the set is indeed
           independent as long as the assignment satisfies the formula.
         """
-        self._debug_print("Starting sol1tosol2 (SAT → IS) conversion…")
+        self._debug_print("Starting sol1_to_sol2 (SAT → IS) conversion…")
+
+        sat_assignment = self.problem1.solution
+        print("sat_assignment:", sat_assignment)
 
         independent_set = set()  # The resulting node set
         formula_list = self.problem1.element.clauses
@@ -270,9 +238,6 @@ class ThreeSatToIndependentSetReduction(Reduction):
                 if assigned_val != is_negated:
                     chosen_node = node
 
-                    # Store for reverse lookup when we later highlight answers.
-                    self.output1_to_output2_pairs[literal] = node
-
                     self._debug_print(
                         f"    → Literal {literal} is satisfied; picking node {node.id}.")
                     break  # Only need *one* per clause
@@ -293,14 +258,14 @@ class ThreeSatToIndependentSetReduction(Reduction):
     # ---------------------------------------------------------------------
     def solution2_to_solution1(self, independent_set):
         """
-        Recover a concrete truth assignment for the original 3‑SAT instance
+        Recover a truth assignment for the original 3‑SAT instance
         from the *independent_set* returned by the graph solver.
 
         Mapping logic
         -------------
         1.  **Selected nodes ⇒ True literal**
             • Every node in the independent set corresponds to one literal
-            (stored in ``self.input2_to_input1_pairs``).
+            (stored in ``self.input1_to_input2_pairs``).
             • If the literal is positive  (x)   → assign  x = True
             If the literal is negated  (¬x)  → assign  x = False
             • If the same variable is implied twice we keep the first value
@@ -326,14 +291,10 @@ class ThreeSatToIndependentSetReduction(Reduction):
         # ---- 4(a) Positive information: variables forced by selected nodes
         self._debug_print("Assigning variables for selected nodes in the Independent Set.")
         for literal, node in self.input1_to_input2_pairs.items():
-            # We only care about nodes that survived in the solver’s answer.
+            # We only care about nodes that are selected in the solver’s answer.
             if node in independent_set:
-                var        = literal.name           # e.g.  "x3"
+                var = literal.name           # e.g.  "x3"
                 is_negated = literal.is_negated     # True  for  ¬x3,  False for  x3
-
-                # Keep a *reverse* lookup for GUI / animation layers:
-                #     graph‑node  →  corresponding literal occurrence
-                self.output2_to_output1_pairs[node] = literal
 
                 # If several occurrences mention the *same* variable we accept the
                 # first assignment we see and silently ignore any duplicates.
@@ -351,8 +312,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
                 #
                 # Therefore the first time we encounter a variable we lock in its truth value;
                 # any later occurrences just read the existing entry and leave it unchanged
-                # (“first‑come, first‑served”).
-                
+
                 sat_assignment.setdefault(var, not is_negated)
 
                 # Verbose debug trace
@@ -396,7 +356,7 @@ class ThreeSatToIndependentSetReduction(Reduction):
         self._debug_print(f"  Formula satisfied? {satisfied}")
 
         # Step 2: graph evaluation
-        chosen_set      = self.solution1_to_solution2(sat_assignment)
+        chosen_set      = self.solution1_to_solution2()
         valid_independent = self.problem2.evaluate(chosen_set)
         self._debug_print(f"  Independent set valid? {valid_independent}")
         self._debug_print("Finished test_solution.\n")

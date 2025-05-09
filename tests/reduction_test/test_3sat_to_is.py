@@ -1,11 +1,11 @@
 import numpy as np
 from npvis.game_manager import GameManager
+from npvis.problem import ThreeSATProblem, IndependentSetProblem
+from npvis.reduction import ThreeSatToIndependentSetReduction
+
 
 def main():
     # 1) Create problems
-    from npvis.problem import ThreeSATProblem, IndependentSetProblem
-    from npvis.reduction import ThreeSatToIndependentSetReduction
-
     three_sat = ThreeSATProblem()
     ind_set = IndependentSetProblem()
     
@@ -19,11 +19,12 @@ def main():
     # three_sat.load_formula_from_file("sampleFormula.txt")  # Provide correct file path
     
     # 3) Create and build the reduction
-    reduction = ThreeSatToIndependentSetReduction(three_sat, ind_set, debug=False)
-    reduction.build_graph_from_formula()
+    reduction = ThreeSatToIndependentSetReduction(three_sat, ind_set, debug=False) # debug Flag
+    reduction.input1_to_input2()
     
     # 4) Pick an example SAT assignment
     sat_assignment = {'x1': True, 'x2': True, 'x3': False, 'x4': False}
+    reduction.problem1.solution = sat_assignment
     
     # 5) Test forward & reverse
     sat_ok, ind_set_ok = reduction.test_solution(sat_assignment)
@@ -31,7 +32,7 @@ def main():
     print("Graph independent set valid?", ind_set_ok)
     
     # 6) Compute the independent set from the SAT assignment
-    is_set = reduction.solution1_to_solution2(sat_assignment)    
+    is_set = reduction.solution1_to_solution2()
     print("Independent Set from SAT assignment:", is_set)
     ind_set.set_solution(is_set)
     

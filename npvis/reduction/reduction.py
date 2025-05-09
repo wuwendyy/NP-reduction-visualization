@@ -74,10 +74,10 @@ class Reduction:
         # CASE: not input 1
         if not is_input1:
             for key, value in self.input1_to_input2_dict.items():
-                print(f"clicked set: {clicked_set}")
-                print(f"input 1 set: {value}")
+                # print(f"clicked set: {clicked_set}")
+                # print(f"input 1 set: {value}")
                 if clicked_set <= value: # clicked set is a subset 
-                    print("find input 1")
+                    # print("find input 1")
                     
                     # Note: empirically, a steeper ratio seems help visualization
                     ratio = (1 - len(clicked_set) / len(value)) ** 3
